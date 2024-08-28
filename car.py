@@ -620,24 +620,10 @@ class Car(Entity):
         """
         Resets the car
         """
-        if self.sand_track.enabled:
-            self.position = (-63, -40, -7)
-            self.rotation = (0, 90, 0)
-        elif self.grass_track.enabled:
-            self.position = (-80, -30, 18.5)
-            self.rotation = (0, 90, 0)
-        elif self.snow_track.enabled:
-            self.position = (-5, -35, 93)
-            self.rotation = (0, 90, 0)
-        elif self.forest_track.enabled:
+        if self.forest_track.enabled:
             self.position = (12, -35, 76)
             self.rotation = (0, 90, 0)
-        elif self.savannah_track.enabled:
-            self.position = (-14, -35, 42)
-            self.rotation = (0, 90, 0)
-        elif self.lake_track.enabled:
-            self.position = (-121, -40, 158)
-            self.rotation = (0, 90, 0)
+
         camera.world_rotation_y = self.rotation_y
         self.speed = 0
         self.velocity_y = 0
