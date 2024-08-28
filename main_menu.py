@@ -426,15 +426,6 @@ class MainMenu(Entity):
                         ai.set_random_texture()
                         ai.next_path = ai.sap1
                         ai.check_track()
-
-                if self.car.gamemode == "race":
-                    self.car.highscore_count = float(self.car.sand_track_hs)
-                elif self.car.gamemode == "time trial":
-                    self.car.highscore_count = float(self.car.sand_track_laps)
-                elif self.car.gamemode == "drift":
-                    self.car.drift_time = 25
-                    self.car.highscore_count = float(self.car.sand_track_drift)
-                    self.car.highscore.text = str(int(self.car.highscore_count))
             else:
                 unlocked_text.shake()
 
@@ -478,14 +469,6 @@ class MainMenu(Entity):
                         ai.next_path = ai.gp1
                         ai.check_track()
 
-                if self.car.gamemode == "race":
-                    self.car.highscore_count = float(self.car.grass_track_hs)
-                elif self.car.gamemode == "time trial":
-                    self.car.highscore_count = float(self.car.grass_track_laps)
-                elif self.car.gamemode == "drift":
-                    self.car.drift_time = 30
-                    self.car.highscore_count = float(self.car.grass_track_drift)
-                    self.car.highscore.text = str(int(self.car.highscore_count))
             else:
                 unlocked_text.shake()
 
@@ -527,14 +510,6 @@ class MainMenu(Entity):
                         ai.next_path = ai.snp1
                         ai.check_track()
 
-                if self.car.gamemode == "race":
-                    self.car.highscore_count = float(self.car.snow_track_hs)
-                elif self.car.gamemode == "time trial":
-                    self.car.highscore_count = float(self.car.snow_track_laps)
-                elif self.car.gamemode == "drift":
-                    self.car.drift_time = 50
-                    self.car.highscore_count = float(self.car.snow_track_drift)
-                    self.car.highscore.text = str(int(self.car.highscore_count))
             else:
                 unlocked_text.shake()
 
@@ -576,14 +551,6 @@ class MainMenu(Entity):
                         ai.next_path = ai.fp1
                         ai.check_track()
 
-                if self.car.gamemode == "race":
-                    self.car.highscore_count = float(self.car.forest_track_hs)
-                elif self.car.gamemode == "time trial":
-                    self.car.highscore_count = float(self.car.forest_track_laps)
-                elif self.car.gamemode == "drift":
-                    self.car.drift_time = 40
-                    self.car.highscore_count = float(self.car.forest_track_drift)
-                    self.car.highscore.text = str(int(self.car.highscore_count))
             else:
                 unlocked_text.shake()
 
@@ -625,14 +592,6 @@ class MainMenu(Entity):
                         ai.next_path = ai.svp1
                         ai.check_track()
 
-                if self.car.gamemode == "race":
-                    self.car.highscore_count = float(self.car.savannah_track_hs)
-                elif self.car.gamemode == "time trial":
-                    self.car.highscore_count = float(self.car.savannah_track_laps)
-                elif self.car.gamemode == "drift":
-                    self.car.drift_time = 25
-                    self.car.highscore_count = float(self.car.savannah_track_drift)
-                    self.car.highscore.text = str(int(self.car.highscore_count))
             else:
                 unlocked_text.shake()
             
@@ -677,14 +636,6 @@ class MainMenu(Entity):
                         ai.next_path = ai.lp1
                         ai.check_track()
 
-                if self.car.gamemode == "race":
-                    self.car.highscore_count = float(self.car.lake_track_hs)
-                elif self.car.gamemode == "time trial":
-                    self.car.highscore_count = float(self.car.lake_track_laps)
-                elif self.car.gamemode == "drift":
-                    self.car.drift_time = 75
-                    self.car.highscore_count = float(self.car.lake_track_drift)
-                    self.car.highscore.text = str(int(self.car.highscore_count))
             else:
                 unlocked_text.shake()
 
@@ -705,9 +656,6 @@ class MainMenu(Entity):
             sand_track.enable()
             self.car.position = (-40, 30, -175)
             unlocked_text.disable()
-            if self.car.gamemode == "race":
-                highscore_text.enable()
-                highscore_text.text = "Highscore: " + str(round(self.car.sand_track_hs, 2)) + "\n Mandaw: 13.09"
 
         def grass_track_hover():
             for track in self.tracks:
@@ -731,15 +679,13 @@ class MainMenu(Entity):
                 grass_track.alpha = 200
                 unlocked_text.enable()
                 unlocked_text.text = "Get Less Than 22 seconds on Sand Track"
-                highscore_text.disable()
+
                 for i in grass_track.track:
                     i.alpha = 200
                 for i in grass_track.details:
                     i.alpha = 200
             else:
-                if self.car.gamemode == "race":
-                    highscore_text.enable()
-                    highscore_text.text = "Highscore: " + str(round(self.car.grass_track_hs, 2)) + "\n Mandaw: 15.55"
+
                 unlocked_text.disable()
                 grass_track.alpha = 255
 
@@ -763,15 +709,11 @@ class MainMenu(Entity):
                 snow_track.alpha = 200
                 unlocked_text.enable()
                 unlocked_text.text = "Get Less Than 23 seconds on Grass Track"
-                highscore_text.disable()
                 for i in snow_track.track:
                     i.alpha = 200
                 for i in snow_track.details:
                     i.alpha = 200
             else:
-                if self.car.gamemode == "race":
-                    highscore_text.enable()
-                    highscore_text.text = "Highscore: " + str(round(self.car.snow_track_hs, 2)) + "\n Mandaw: 27.41"
                 unlocked_text.disable()
                 snow_track.alpha = 255
         
@@ -795,15 +737,12 @@ class MainMenu(Entity):
                 forest_track.alpha = 200
                 unlocked_text.enable()
                 unlocked_text.text = "Get Less Than 40 seconds on Snow Track"
-                highscore_text.disable()
+
                 for i in forest_track.track:
                     i.alpha = 200
                 for i in forest_track.details:
                     i.alpha = 200
             else:
-                if self.car.gamemode == "race":
-                    highscore_text.enable()
-                    highscore_text.text = "Highscore: " + str(round(self.car.forest_track_hs, 2)) + "\n Mandaw: 21.73"
                 unlocked_text.disable()
                 forest_track.alpha = 255
 
@@ -827,15 +766,12 @@ class MainMenu(Entity):
                 savannah_track.alpha = 200
                 unlocked_text.enable()
                 unlocked_text.text = "Get Less Than 32 seconds on Forest Track"
-                highscore_text.disable()
+
                 for i in savannah_track.track:
                     i.alpha = 200
                 for i in savannah_track.details:
                     i.alpha = 200
             else:
-                if self.car.gamemode == "race":
-                    highscore_text.enable()
-                    highscore_text.text = "Highscore: " + str(round(self.car.savannah_track_hs, 2)) + "\n Mandaw: 12.31"
                 unlocked_text.disable()
                 savannah_track.alpha = 255
 
@@ -862,15 +798,13 @@ class MainMenu(Entity):
                 lake_track.alpha = 200
                 unlocked_text.enable()
                 unlocked_text.text = "Get Less Than 20 seconds on Savannah Track"
-                highscore_text.disable()
+
                 for i in lake_track.track:
                     i.alpha = 200
                 for i in lake_track.details:
                     i.alpha = 200
             else:
-                if self.car.gamemode == "race":
-                    highscore_text.enable()
-                    highscore_text.text = "Highscore: " + str(round(self.car.lake_track_hs, 2)) + "\n Mandaw: 39.45"
+
                 unlocked_text.disable()
                 lake_track.alpha = 255
 
@@ -885,9 +819,6 @@ class MainMenu(Entity):
         
         unlocked_text = Text("Get Less Than 20 seconds on Sand Track to Unlock Grass Track", scale = 1.5, color = color.orange, line_height = 2, origin = 0, y = -0.1, parent = self.maps_menu)
         unlocked_text.disable()
-
-        highscore_text = Text("", scale = 1.2, color = color.white, line_height = 2, origin = 0, y = -0.07, parent = self.maps_menu)
-        highscore_text.disable()
 
         ai_button = Button(text = "AI: Off", color = color.light_gray, scale_y = 0.1, scale_x = 0.3, y = -0.28, x = 0, parent = self.maps_menu)
         self.ai_slider = Slider(min = 1, max = 3, default = 1, text = "AI", y = -0.4, x = -0.3, scale = 1.3, parent = self.maps_menu, dynamic = True)
@@ -1082,13 +1013,13 @@ class MainMenu(Entity):
         graphics_button = Button("Graphics: Fancy", color = color.black, scale_y = 0.1, scale_x = 0.3, y = 0.24, parent = self.gameplay_menu)
         camera_angle_button = Button("Camera Angle: Top", color = color.black, scale_y = 0.1, scale_x = 0.3, y = 0.12, parent = self.gameplay_menu)
         camera_shake_button = Button("Camera Shake: On", color = color.black, scale_y = 0.1, scale_x = 0.3, y = 0, parent = self.gameplay_menu)
-        reset_highsore_button = Button(text = "Reset Highscore", color = color.black, scale_y = 0.1, scale_x = 0.3, y = -0.12, parent = self.gameplay_menu)
+
         back_button_gameplay = Button(text = "Back", color = color.black, scale_y = 0.1, scale_x = 0.3, y = -0.24, parent = self.gameplay_menu)
 
         graphics_button.on_click = Func(graphics)
         camera_angle_button.on_click = Func(camera_angle)
         camera_shake_button.on_click = Func(camera_shake)
-        reset_highsore_button.on_click = Func(self.car.reset_highscore)
+
         back_button_gameplay.on_click = Func(back_gameplay)
 
         # Video Menu
@@ -1396,8 +1327,6 @@ class MainMenu(Entity):
                     detail.enable()
             if self.car.graphics == "fast":
                 grass_track.grass.disable()
-
-            self.car.highscore_count = float(self.car.grass_track_hs)
 
         def garage_button_func():
             self.garage_menu.enable()
@@ -1909,8 +1838,8 @@ class MainMenu(Entity):
                 self.car.timer.enable()
             else:
                 self.car.timer.disable()
-             
-            self.car.highscore.enable()
+
+
             if self.car.gamemode == "time trial":
                 self.car.laps_text.enable()
             elif self.car.gamemode == "drift":
@@ -1919,7 +1848,7 @@ class MainMenu(Entity):
         else:
             self.car.timer.disable()
             self.car.reset_count_timer.disable()
-            self.car.highscore.disable()
+
             self.car.laps_text.disable()
             self.car.drift_text.disable()
             self.car.drift_timer.disable()

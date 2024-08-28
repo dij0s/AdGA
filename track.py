@@ -57,8 +57,6 @@ class ForestTrack(Entity):
                 if self.car.gamemode != "drift":
                     invoke(self.car.reset_timer, delay = 3)
 
-                self.car.check_highscore()
-
                 self.wall1.enable()
                 self.wall2.enable()
                 self.wall3.disable()
