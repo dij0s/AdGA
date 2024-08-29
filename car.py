@@ -40,6 +40,9 @@ class Car(Entity):
         self.min_drift_speed = 20
         self.pivot_rotation_distance = 1
 
+        self.reset_position = (12, -35, 76)
+        self.reset_rotation = (0, 90, 0)
+
         # Camera Follow
         self.camera_angle = "top"
         self.camera_offset = (0, 60, -70)
@@ -621,8 +624,8 @@ class Car(Entity):
         Resets the car
         """
         if self.forest_track.enabled:
-            self.position = (12, -35, 76)
-            self.rotation = (0, 90, 0)
+            self.position = self.reset_position
+            self.rotation = self.reset_rotation
 
         camera.world_rotation_y = self.rotation_y
         self.speed = 0

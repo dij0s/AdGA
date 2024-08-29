@@ -2,9 +2,8 @@ from ursina import *
 from direct.stdpy import thread
 
 from car import Car
+from remote_controller import RemoteController
 
-from multiplayer import Multiplayer
-from main_menu import MainMenu
 
 from sun import SunLight
 
@@ -14,19 +13,18 @@ Text.default_font = "./assets/Roboto.ttf"
 Text.default_resolution = 1080 * Text.size
 
 # Window
-
-app = Ursina()
+window.vsync = True # Set to false to uncap FPS limit of 60
+app = Ursina(size=(640,640))
 window.title = "Rally"
 window.borderless = False
 window.show_ursina_splash = True
 window.cog_button.disable()
-window.fps_counter.disable()
+window.fps_counter.enable()
 window.exit_button.disable()
 
 if sys.platform != "darwin":
     window.fullscreen = False
 else:
-    window.size = window.fullscreen_size
     window.position = Vec2(
         int((window.screen_resolution[0] - window.fullscreen_size[0]) / 2),
         int((window.screen_resolution[1] - window.fullscreen_size[1]) / 2)
@@ -72,9 +70,12 @@ try:
 except Exception as e:
     print("error starting thread", e)
 
+
 # Car
 car = Car()
 car.sports_car()
+
+remote_controller = RemoteController(car = car)
 
 # Tracks
 forest_track = ForestTrack(car)
