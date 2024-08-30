@@ -71,16 +71,11 @@ class SensingSnapshotManager:
         sizeheader = struct.calcsize(">i")
         message_size = struct.unpack(">i", self.pending_data[:sizeheader])[0]
 
-        print("expecting data size =", message_size, " <? ", len(self.pending_data))
-
         if message_size+sizeheader <= len(self.pending_data):
-            print("Recv full message")
             snapshot = SensingSnapshot()
 
             snapshot.unpack(self.pending_data[sizeheader:sizeheader+message_size])
-            print("self.received_msg_callback =", self.received_snapshot_callback)
             if self.received_snapshot_callback is not None:
-                print("callbacking")
                 self.received_snapshot_callback(snapshot)
 
             self.pending_data = self.pending_data[sizeheader+message_size:]

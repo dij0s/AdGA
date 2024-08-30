@@ -43,8 +43,6 @@ class RemoteController(Entity):
             return
 
         if time.time() - self.last_sensing >= self.sensing_period:
-            sensing_data = b''
-
             snapshot = SensingSnapshot()
             snapshot.car_position = self.car.world_position
             snapshot.car_speed = self.car.speed
@@ -62,7 +60,6 @@ class RemoteController(Entity):
             msg_mngr = SensingSnapshotManager()
             data = msg_mngr.pack(snapshot)
 
-            print("Sending #bytes =", len(data))
             try:
                 self.connected_client.sendall(data)
             except ConnectionError as e:
@@ -120,7 +117,6 @@ class RemoteController(Entity):
                     #received nothing
                     if len(recv_data) == 0:
                         break
-                    print("Recv data", recv_data)
                     self.client_commands.add(recv_data)
 
             except Exception as e:

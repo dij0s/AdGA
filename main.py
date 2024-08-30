@@ -75,6 +75,9 @@ remote_controller = RemoteController(car = car)
 forest_track = ForestTrack(car)
 car.forest_track = forest_track
 
+car.multiray_sensor = MultiRaySensor(car, 11, 90)
+car.multiray_sensor.enable()
+
 # Lighting + shadows
 sun = SunLight(direction = (-0.7, -0.9, 0.5), resolution = 3072, car = car)
 ambient = AmbientLight(color = Vec4(0.5, 0.55, 0.66, 0) * 0.75)

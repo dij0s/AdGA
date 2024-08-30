@@ -121,17 +121,6 @@ class Car(Entity):
         self.laps_hs = 0
         self.anti_cheat = 1
 
-        # Drift Gamemode
-        self.drift_text = Text(text = "", origin = (0, 0), color = color.white, size = 0.05, scale = (1.1, 1.1), position = (0, 0.43), visible = False)
-        self.drift_timer = Text(text = "", origin = (0, 0), size = 0.05, scale = (1, 1), position = (0.7, 0.43))
-        self.start_drift = False
-        self.drift_score = 0
-        self.drift_time = 0
-        self.drift_multiplier = 20
-        self.get_hundred = False
-        self.get_thousand = False
-        self.get_fivethousand = False
-
         # Bools
         self.driving = False
         self.braking = False
@@ -154,10 +143,9 @@ class Car(Entity):
 
         self.model_path = str(self.model).replace("render/scene/car/", "")
 
-        invoke(self.update_model_path, delay = 0.1)
+        invoke(self.update_model_path, delay = 1)
 
-        self.multiray_sensor = MultiRaySensor(self, 11, 90)
-        self.multiray_sensor.enable()
+        self.multiray_sensor = None
 
     def sports_car(self):
         self.car_type = "sports"
@@ -193,44 +181,16 @@ class Car(Entity):
 
         # Camera
         if self.camera_follow:
-            # Side Camera Angle
-            if self.camera_angle == "side":
-                camera.rotation = (35, -20, 0)
-                self.camera_speed = 8
-                self.change_camera = False
-                camera.world_position = lerp(camera.world_position, self.world_position + (20, 40, -50), time.dt * self.camera_speed)
-            # Top Camera Angle
-            elif self.camera_angle == "top":
-                if self.change_camera:
-                    camera.rotation_x = 35
-                    self.camera_rotation = 40
-                self.camera_offset = (0, 60, -70)
-                self.camera_speed = 4
-                self.change_camera = False
-                #camera.rotation_x = self.camera_rotation
-                camera.world_position = self.camera_pivot.world_position
-                camera.world_rotation_y = self.world_rotation_y
-                """
-                camera.rotation_x = lerp(camera.rotation_x, self.camera_rotation, 2 * time.dt)
-                camera.world_position = lerp(camera.world_position, self.camera_pivot.world_position, time.dt * self.camera_speed / 2)
-                camera.world_rotation_y = lerp(camera.world_rotation_y, self.world_rotation_y, time.dt * self.camera_speed / 2)"""
-            # Third Person Camera Angle
-            elif self.camera_angle == "behind":
-                if self.change_camera:
-                    camera.rotation_x = 12
-                    self.camera_rotation = 40
-                self.camera_offset = (0, 10, -30)
-                self.change_camera = False
-                self.camera_speed = 8
-                camera.rotation_x = lerp(camera.rotation_x, self.camera_rotation / 3, 2 * time.dt)
-                camera.world_position = lerp(camera.world_position, self.camera_pivot.world_position, time.dt * self.camera_speed / 2)
-                camera.world_rotation_y = lerp(camera.world_rotation_y, self.world_rotation_y, time.dt * self.camera_speed / 2)
-            # First Person Camera Angle
-            elif self.camera_angle == "first-person":
-                self.change_camera = False
-                self.camera_speed = 8
-                camera.world_position = lerp(camera.world_position, self.world_position + (0.5, 0, 0), time.dt * 30)
-                camera.world_rotation = lerp(camera.world_rotation, self.world_rotation, time.dt * 30)
+            if self.change_camera:
+                camera.rotation_x = 35
+                self.camera_rotation = 40
+            self.camera_offset = (0, 60, -70)
+            self.camera_speed = 4
+            self.change_camera = False
+            #camera.rotation_x = self.camera_rotation
+            camera.world_position = self.camera_pivot.world_position
+            camera.world_rotation_y = self.world_rotation_y
+
 
         # The y rotation distance between the car and the pivot
         self.pivot_rotation_distance = (self.rotation_y - self.pivot.rotation_y)
@@ -408,26 +368,6 @@ class Car(Entity):
         elif self.camera_rotation <= 30:
             self.camera_rotation = 30
 
-        # Camera Shake
-        if self.speed >= 1 and self.driving:
-            self.can_shake = True
-            if self.pivot_rotation_distance > 0:
-                self.shake_amount = self.speed * self.pivot_rotation_distance / 200
-            elif self.pivot_rotation_distance < 0:
-                self.shake_amount = self.speed * -self.pivot_rotation_distance / 200
-        else:
-            self.can_shake = False
-
-        # Cap the camera shake amount
-        if self.shake_amount <= 0:
-            self.shake_amount = 0
-        if self.shake_amount >= 0.03:
-            self.shake_amount = 0.03
-
-        # If the camera can shake and camera shake is on, then shake the camera
-        if self.can_shake and self.camera_shake_option and self.camera_angle != "first-person":
-            self.shake_camera()
-
         # Rotation
         self.rotation_parent.position = self.position
 
@@ -502,18 +442,7 @@ class Car(Entity):
         camera.world_rotation_y = self.rotation_y
         self.speed = 0
         self.velocity_y = 0
-        self.anti_cheat = 1
         self.timer_running = False
-        if self.gamemode == "race":
-            self.count = 0.0
-            self.reset_count = 0.0
-        elif self.gamemode == "time trial":
-            self.count = 100.0
-            self.reset_count = 100.0
-            self.laps = 0
-            self.start_time = False
-        elif self.gamemode == "drift":
-            self.reset_drift_score()
         for trail in self.trails:
             if trail.trailing:
                 trail.end_trail()
@@ -563,36 +492,6 @@ class Car(Entity):
         self.get_thousand = False
         self.get_fivethousand = False
 
-    def reset_drift_text(self):
-        """
-        Resets the drift text
-        """
-        self.drift_score += self.count
-        self.drift_multiplier = 20
-        self.count = 0
-        self.drifting = False
-        invoke(setattr, self.drift_text, "visible", False, delay = 0.1)
-        invoke(setattr, self.drift_text, "position", (0, 0.43), delay = 0.3)
-
-    def reset_drift_score(self):
-        self.count = 0
-        self.drift_score = 0
-        self.drift_multiplier = 20
-        self.drifting = False
-
-        if self.sand_track.enabled:
-            self.drift_time = 25.0
-        elif self.grass_track.enabled:
-            self.drift_time = 30.0
-        elif self.snow_track.enabled:
-            self.drift_time = 50.0
-        elif self.forest_track.enabled:
-            self.drift_time = 40.0
-        elif self.savannah_track.enabled:
-            self.drift_time = 25.0
-        elif self.lake_track.enabled:
-            self.drift_time = 75.0
-
     def animate_text(self, text, top = 1.2, bottom = 0.6):
         """
         Animates the scale of text
@@ -604,14 +503,6 @@ class Car(Entity):
         else:
             text.animate_scale((top, top, top), curve = curve.out_expo)
             invoke(text.animate_scale, (bottom, bottom, bottom), delay = 0.2)
-
-    def shake_camera(self):
-        """
-        Camera shake
-        """
-        camera.x += random.randint(-1, 1) * self.shake_amount
-        camera.y += random.randint(-1, 1) * self.shake_amount
-        camera.z += random.randint(-1, 1) * self.shake_amount
 
     def update_model_path(self):
         """

@@ -24,6 +24,7 @@ This repository holds a sandbox driving simulation controllable via a network in
   * **Done -** Socket & communication protocol
   * **Done -** in-control streaming
     * **ToDo -** Polish communication protocol
+      * **ToDo -** speed reset
     * **ToDo -** Decide to add time dilation ? (Running simulation faster) or let student figure it ?
   * **Done -** out sensing streaming
     * **Done -** sensing parameters (frequency, resolution, etc)

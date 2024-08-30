@@ -30,7 +30,6 @@ class SimpleCollector:
                 self.msg_mngr.add_message_chunk(data)
 
         except Exception as e:
-            print(e)
             pass
 
     def process_sensing_message(self, sensing_snapshot):

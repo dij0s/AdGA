@@ -93,7 +93,6 @@ class RemoteCommandParser:
             command_words.append(command_string)
 
             self.command_words.append(command_words)
-            print("Appending command words =", command_words)
 
             self.pending_data = self.pending_data[next_semicol+1:]
             next_semicol = self.pending_data.find(b';')
