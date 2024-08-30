@@ -3,7 +3,7 @@ from ursina import *
 import socket
 import struct
 
-from protocol import RemoteCommandParser
+from remote_commands import RemoteCommandParser
 
 REMOTE_CONTROLLER_VERBOSE = False
 
@@ -44,13 +44,7 @@ class RemoteController(Entity):
         if time.time() - self.last_sensing >= self.sensing_period:
             sensing_data = b''
 
-            x,y,z = self.car.world_position
-            sensing_data += struct.pack(">fff", x, y, z)
 
-            s = self.car.speed
-            sensing_data += struct.pack(">f", s)
-
-            print(self.car.multiray_sensor.collect_sensor_values())
 
             self.last_sensing = time.time()
 
