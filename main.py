@@ -28,7 +28,7 @@ window.exit_button.disable()
 def load_assets():
     models_to_load = [
         # Cars
-        "sports-car.obj", "muscle-car.obj", "limousine.obj", "lorry.obj", "hatchback.obj", "rally-car.obj",
+        "sports-car.obj"
         # Tracks
         "forest_track.obj", "particles.obj",
         # Track Bounds
@@ -49,9 +49,6 @@ def load_assets():
         "tree-forest.png", "thintree-forest.png",
         # Particle Textures
         "particle_forest_track.png",
-        # Cosmetic Textures + Icons
-        "viking_helmet.png", "surfinbird.png", "surfboard.png", "viking_helmet-icon.png", "duck-icon.png",
-        "banana-icon.png", "surfinbird-icon.png",
         #Utils
         "red.png"
     ]

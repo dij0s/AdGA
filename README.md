@@ -1,7 +1,8 @@
 ![](https://gitlab.hevs.ch/uploads/-/system/project/avatar/1282/rallyrobopilot.jpg)
+
 # Rally Robopilot Project
 
-This repository holds a sandbox driving simulation controllable via a network interface. 
+This repository holds a sandbox driving simulation controllable via a network interface as a machine learning and data collection challenge.  
 
 
 # ToDo & Done

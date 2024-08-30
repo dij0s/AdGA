@@ -83,7 +83,6 @@ class Car(Entity):
         self.audio = True
         self.volume = 1
         self.start_fall = True
-        self.drift_swush = Audio("unlock.mp3", autoplay = False, volume = 0.8)
 
         # Collision
         self.copy_normals = False
@@ -96,19 +95,6 @@ class Car(Entity):
         self.forest_track = None
         self.savannah_track = None
         self.lake_track = None
-
-        # Cosmetics
-        self.current_cosmetic = "none"
-        self.viking_helmet = Entity(model = "viking_helmet.obj", texture = "viking_helmet.png", parent = self)
-        self.duck = Entity(model = "duck.obj", parent = self)
-        self.banana = Entity(model = "banana.obj", parent = self)
-        self.surfinbird = Entity(model = "surfinbird.obj", texture = "surfinbird.png", parent = self)
-        self.surfboard = Entity(model = "surfboard.obj", texture = "surfboard.png", parent = self.surfinbird)
-        self.cosmetics = [self.viking_helmet, self.duck, self.banana, self.surfinbird]
-        self.viking_helmet.disable()
-        self.duck.disable()
-        self.banana.disable()
-        self.surfinbird.disable()
 
         # Graphics
         self.graphics = "fancy"
@@ -187,8 +173,6 @@ class Car(Entity):
         self.steering_amount = 8
         self.particle_pivot.position = (0, -1, -1.5)
         self.trail_pivot.position = (0, -1, 1.5)
-        for cosmetic in self.cosmetics:
-            cosmetic.y = 0
 
     def update(self):
         # Stopwatch/Timer
@@ -575,7 +559,6 @@ class Car(Entity):
         self.animate_text(self.drift_text, 1.7, 1.1)
         invoke(self.drift_text.animate_position, (-0.8, 0.43), 0.3, curve = curve.out_expo, delay = 0.3)
         invoke(self.reset_drift_text, delay = 0.4)
-        self.drift_swush.play()
         self.get_hundred = False
         self.get_thousand = False
         self.get_fivethousand = False
@@ -650,34 +633,9 @@ class CarRepresentation(Entity):
         )
 
         self.model_path = str(self.model).replace("render/scene/car_representation/", "")
-        
-        self.viking_helmet = Entity(model = "viking_helmet.obj", texture = "viking_helmet.png", parent = self)
-        self.duck = Entity(model = "duck.obj", parent = self)
-        self.banana = Entity(model = "banana.obj", parent = self)
-        self.surfinbird = Entity(model = "surfinbird.obj", texture = "surfinbird.png", parent = self)
-        self.surfboard = Entity(model = "surfboard.obj", texture = "surfboard.png", parent = self.surfinbird)
-        self.viking_helmet.disable()
-        self.duck.disable()
-        self.banana.disable()
-        self.surfinbird.disable()
-
-        self.cosmetics = [self.viking_helmet, self.duck, self.banana, self.surfinbird]
 
         self.text_object = None
 
-        invoke(self.update_representation, delay = 5)
-
-    def update_representation(self):
-        for cosmetic in self.cosmetics:
-            if cosmetic.enabled:
-                if self.model_path == "lorry.obj":
-                    cosmetic.y = 1.5
-                elif self.model_path == "limo.obj":
-                    cosmetic.y = 0.1
-                elif self.model_path == "sports-car.obj" or self.model_path == "muscle-car.obj":
-                    cosmetic.y = 0
-
-        invoke(self.update_representation, delay = 5)
 
 # Username shown above the car
 class CarUsername(Text):
