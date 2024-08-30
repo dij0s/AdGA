@@ -23,6 +23,11 @@ class SimpleCollector:
 if __name__ == "__main__":
     collector = SimpleCollector()
     collector.run()
+    time.sleep(2)
+    collector.socket.send(b'set ray hidden;')
+    time.sleep(4)
+    collector.socket.send(b'set ray visible;')
+    """
     time.sleep(1)
     collector.socket.send(b'push forward;')
     time.sleep(2)
@@ -42,3 +47,4 @@ if __name__ == "__main__":
     time.sleep(1)
     collector.socket.send(b'set rotation 270;')
     collector.socket.send(b'reset;')
+    """

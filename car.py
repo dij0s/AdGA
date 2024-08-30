@@ -1,6 +1,7 @@
 from ursina import *
 from ursina import curve
 from particles import Particles, TrailRenderer
+from raycast_sensor import MultiRaySensor
 import json
 
 sign = lambda x: -1 if x < 0 else (1 if x > 0 else 0)
@@ -81,12 +82,7 @@ class Car(Entity):
         # Audio
         self.audio = True
         self.volume = 1
-        self.start_sound = True
         self.start_fall = True
-        self.drive_sound = Audio("rally.mp3", loop = True, autoplay = False, volume = 0.5)
-        self.dirt_sound = Audio("dirt-skid.mp3", loop = True, autoplay = False, volume = 0.8)
-        self.skid_sound = Audio("skid.mp3", loop = True, autoplay = False, volume = 0.5)
-        self.hit_sound = Audio("hit.wav", autoplay = False, volume = 0.5)
         self.drift_swush = Audio("unlock.mp3", autoplay = False, volume = 0.8)
 
         # Collision
@@ -177,11 +173,13 @@ class Car(Entity):
 
         invoke(self.update_model_path, delay = 3)
 
+        self.multiray_sensor = MultiRaySensor(self, 11, 90)
+        self.multiray_sensor.enable()
+
     def sports_car(self):
         self.car_type = "sports"
         self.model = "sports-car.obj"
         self.texture = "sports-red.png"
-        self.drive_sound.clip = "sports.mp3"
         self.topspeed = 30
         self.acceleration = 0.38
         self.drift_amount = 5
@@ -308,9 +306,6 @@ class Car(Entity):
                         if self.pivot_rotation_distance > 60 or self.pivot_rotation_distance < -60 and self.speed > 10:
                             for trail in self.trails:
                                 trail.start_trail()
-                            if self.audio:
-                                self.skid_sound.volume = self.volume / 2
-                                self.skid_sound.play()
                             self.start_trail = False
                             self.drifting = True
                         else:
@@ -320,8 +315,6 @@ class Car(Entity):
                             for trail in self.trails:
                                 if trail.trailing:
                                     trail.end_trail()
-                            if self.audio:
-                                self.skid_sound.stop(False)
                             self.start_trail = True
                             self.drifting = False
                         self.drifting = False
@@ -342,32 +335,6 @@ class Car(Entity):
                 self.braking = True
             else:
                 self.braking = False
-
-            # Audio
-            if self.driving or self.braking:
-                if self.start_sound and self.audio:
-                    if not self.drive_sound.playing:
-                        self.drive_sound.loop = True
-                        self.drive_sound.play()
-                    if not self.dirt_sound.playing:
-                        self.drive_sound.loop = True
-                        self.dirt_sound.play()
-                    self.start_sound = False
-
-                if self.speed > 0:
-                    self.drive_sound.volume = self.speed / 80 * self.volume
-                elif self.speed < 0:
-                    self.drive_sound.volume = -self.speed / 80 * self.volume
-
-                if self.pivot_rotation_distance > 0:
-                    self.dirt_sound.volume = self.pivot_rotation_distance / 110 * self.volume
-                elif self.pivot_rotation_distance < 0:
-                    self.dirt_sound.volume = -self.pivot_rotation_distance / 110 * self.volume
-            else:
-                self.drive_sound.volume -= 0.5 * time.dt
-                self.dirt_sound.volume -= 0.5 * time.dt
-                if self.skid_sound.playing:
-                    self.skid_sound.stop(False)
 
             # Hand Braking
             if held_keys["space"]:
@@ -510,8 +477,6 @@ class Car(Entity):
                     self.rotation_parent.rotation = self.rotation
 
                 if self.start_fall and self.audio:
-                    self.hit_sound.volume = self.volume / 2
-                    self.hit_sound.play()
                     self.start_fall = False
             else:
                 self.y += movementY * 50 * time.dt
@@ -569,12 +534,6 @@ class Car(Entity):
             if trail.trailing:
                 trail.end_trail()
         self.start_trail = True
-        self.start_sound = True
-        if self.audio:
-            if self.skid_sound.playing:
-                self.skid_sound.stop(False)
-            if self.dirt_sound.playing:
-                self.dirt_sound.stop(False)
 
     def simple_intersects(self, entity):
         """

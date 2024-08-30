@@ -29,12 +29,13 @@ class RemoteController(Entity):
         self.reset_speed = (0,0,0)
         self.reset_rotation = 0
 
-        self.sensing_period = 0.1
+        self.sensing_period = 1
         self.last_sensing = -1
 
     def update(self):
         self.update_network()
         self.process_remote_commands()
+        self.process_sensing()
 
     def process_sensing(self):
         if self.car is None:
@@ -49,6 +50,7 @@ class RemoteController(Entity):
             s = self.car.speed
             sensing_data += struct.pack(">f", s)
 
+            print(self.car.multiray_sensor.collect_sensor_values())
 
             self.last_sensing = time.time()
 
@@ -59,6 +61,7 @@ class RemoteController(Entity):
         while len(self.client_commands) > 0:
             try:
                 commands = self.client_commands.parse_next_command()
+
                 if commands[0] == b'push' or commands[0] == b'release':
                     if commands[1] == b'forward':
                         held_keys['w'] = commands[0] == b'push'
@@ -69,6 +72,7 @@ class RemoteController(Entity):
                     elif commands[1] == b'left':
                         held_keys['a'] = commands[0] == b'push'
 
+
                 elif commands[0] == b'set':
                     if commands[1] == b'position':
                         self.car.reset_position = commands[2]
@@ -76,15 +80,16 @@ class RemoteController(Entity):
                         self.car.reset_rotation = (0, commands[2], 0)
                     elif commands[1] == b'speed':
                         # Todo
-                        #self.car.reset_speed = commands[2]
                         pass
+                    elif commands[1] == b'ray':
+                        self.car.multiray_sensor.set_enabled_rays(commands[2] == b'visible')
 
                 elif commands[0] == b'reset':
                     self.car.reset_car()
 
             #   Error is thrown when commands do not fit the model --> disconnect client
             except Exception as e:
-                print("Invalid command --> disconnecting")
+                print("Invalid command --> disconnecting : " + str(e))
                 self.connected_client.close()
                 self.connected_client = None
 

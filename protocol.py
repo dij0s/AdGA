@@ -70,7 +70,8 @@ remote_control_commands = [
     RemoteControlCommand(equals(b'reset')),
     #   Reset parameters command
     RemoteControlCommand(equals(b'set'), contains(b"position", b"speed"), float_tuple),
-    RemoteControlCommand(equals(b'set'), equals(b"rotation"), is_float)
+    RemoteControlCommand(equals(b'set'), equals(b"rotation"), is_float),
+    RemoteControlCommand(equals(b'set'), equals(b"ray"), contains(b'visible', b'hidden'))
 ]
 
 class RemoteCommandParser:

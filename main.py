@@ -72,8 +72,6 @@ except Exception as e:
 car = Car()
 car.sports_car()
 
-
-multi_sensor = MultipleRaySensor(car, 11, 90)
 remote_controller = RemoteController(car = car)
 
 # Tracks
