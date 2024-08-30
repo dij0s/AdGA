@@ -40,20 +40,15 @@ class RemoteController(Entity):
         while len(self.client_commands) > 0:
             try:
                 commands = self.client_commands.parse_next_command()
-                print("Gotten command =", commands)
                 if commands[0] == b'push' or commands[0] == b'release':
                     if commands[1] == b'forward':
                         held_keys['w'] = commands[0] == b'push'
-                        print("Pushing forward")
                     elif commands[1] == b'back':
                         held_keys['s'] = commands[0] == b'push'
-                        print("Pushing back")
                     elif commands[1] == b'right':
                         held_keys['d'] = commands[0] == b'push'
-                        print("Pushing right")
                     elif commands[1] == b'left':
                         held_keys['a'] = commands[0] == b'push'
-                        print("Pushing left")
 
                 elif commands[0] == b'set':
                     if commands[1] == b'position':

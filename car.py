@@ -627,6 +627,10 @@ class Car(Entity):
             self.position = self.reset_position
             self.rotation = self.reset_rotation
 
+        #   Project car directly on ground when resetting
+        y_ray = raycast(origin = self.world_position, direction = (0,-1,0), ignore = [self,])
+        self.y = y_ray.world_point.y + 1.4
+
         camera.world_rotation_y = self.rotation_y
         self.speed = 0
         self.velocity_y = 0
