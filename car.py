@@ -150,9 +150,6 @@ class Car(Entity):
         self.driving = False
         self.braking = False
 
-        self.ai = False
-        self.ai_list = []
-
         # Multiplayer
         self.multiplayer = False
         self.multiplayer_update = False
@@ -171,7 +168,7 @@ class Car(Entity):
 
         self.model_path = str(self.model).replace("render/scene/car/", "")
 
-        invoke(self.update_model_path, delay = 3)
+        invoke(self.update_model_path, delay = 0.1)
 
         self.multiray_sensor = MultiRaySensor(self, 11, 90)
         self.multiray_sensor.enable()

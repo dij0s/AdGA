@@ -18,7 +18,7 @@ window.vsync = True # Set to false to uncap FPS limit of 60
 app = Ursina(size=(1280,1024))
 window.title = "Rally"
 window.borderless = False
-window.show_ursina_splash = True
+window.show_ursina_splash = False
 window.cog_button.disable()
 window.fps_counter.enable()
 window.exit_button.disable()
@@ -76,12 +76,7 @@ remote_controller = RemoteController(car = car)
 
 # Tracks
 forest_track = ForestTrack(car)
-
 car.forest_track = forest_track
-
-# AI
-ai_list = []
-car.ai_list = ai_list
 
 # Lighting + shadows
 sun = SunLight(direction = (-0.7, -0.9, 0.5), resolution = 3072, car = car)
