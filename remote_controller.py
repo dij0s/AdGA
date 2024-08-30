@@ -1,8 +1,9 @@
 
 from ursina import *
 import socket
-import struct
+import numpy as np
 
+from sensing_message import SensingSnapshot, SensingMessageManager
 from remote_commands import RemoteCommandParser
 
 REMOTE_CONTROLLER_VERBOSE = False
@@ -38,13 +39,35 @@ class RemoteController(Entity):
         self.process_sensing()
 
     def process_sensing(self):
-        if self.car is None:
+        if self.car is None or self.connected_client is None:
             return
 
         if time.time() - self.last_sensing >= self.sensing_period:
             sensing_data = b''
 
+            snapshot = SensingSnapshot()
+            snapshot.car_position = self.car.world_position
+            snapshot.car_speed = self.car.speed
+            snapshot.raycast_distances = self.car.multiray_sensor.collect_sensor_values()
 
+            #   Collect last rendered image
+            tex = base.win.getDisplayRegion(0).getScreenshot()
+            arr = tex.getRamImageAs("RGB")
+            data = np.frombuffer(arr, np.uint8)
+            image = data.reshape(tex.getYSize(), tex.getXSize(), 3)
+            image = image[::-1, :, :]#   Image arrives with inverted Y axis
+
+            snapshot.image = image
+
+            msg_mngr = SensingMessageManager()
+            data = msg_mngr.pack(snapshot)
+
+            print("Sending #bytes =", len(data))
+            try:
+                self.connected_client.sendall(data)
+            except ConnectionError as e:
+                self.connected_client.close()
+                self.connected_client = None
 
             self.last_sensing = time.time()
 

@@ -1,6 +1,9 @@
 
 import socket
 import time
+import imageio
+
+from sensing_message import *
 
 class SimpleCollector:
     def __init__(self):
@@ -8,25 +11,42 @@ class SimpleCollector:
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect(("127.0.0.1", 7654))
+        self.socket.setblocking(False)
 
-    def run(self):
-        """
-        while True:
-            self.listen_socket.recv(1024)
-            self.listen_socket.send(b"coucou")
+        self.msg_mngr = SensingMessageManager(self.process_sensing_message)
 
-            time.sleep(0.1)
-        """
-        pass
+    def recv_msg(self):
+        try:
+            while True:
+                data = self.socket.recv(2**20)
+
+                if len(data) == 0:
+                    break
+
+                self.msg_mngr.add_message_chunk(data)
+
+        except Exception as e:
+            print(e)
+            pass
+
+    def process_sensing_message(self, sensing_snapshot):
+        print("sensing_snapshot.car.position =", sensing_snapshot.car_position)
+
+        imageio.imsave("last_image.png", sensing_snapshot.image)
+
 
 
 if __name__ == "__main__":
     collector = SimpleCollector()
-    collector.run()
+
     time.sleep(2)
     collector.socket.send(b'set ray hidden;')
-    time.sleep(4)
-    collector.socket.send(b'set ray visible;')
+    x = 0
+    while x < 10:
+        collector.recv_msg()
+        x += 1
+        time.sleep(0.5)
+
     """
     time.sleep(1)
     collector.socket.send(b'push forward;')

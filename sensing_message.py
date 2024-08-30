@@ -8,7 +8,7 @@ def iter_unpack(format, data):
     return struct.unpack(format, data[:nbr_bytes]), data[nbr_bytes:]
 
 class SensingSnapshot:
-    def __int__(self):
+    def __init__(self):
         self.car_position = (0,0,0)
         self.car_speed = 0
         self.raycast_distances = [0]
@@ -34,20 +34,49 @@ class SensingSnapshot:
         self.car_position = (x,y,z)
         self.car_speed = s
 
-        nbr_raycasts, data = iter_unpack(">B", data)
+        (nbr_raycasts,), data = iter_unpack(">B", data)
+        print(nbr_raycasts)
         self.raycast_distances, data = iter_unpack(">" + "f" * nbr_raycasts, data)
 
-        h,w = iter_unpack(">ii", data)
+        (h,w), data = iter_unpack(">ii", data)
 
         if h*w > 0:
             self.image = np.frombuffer(data, np.uint8).reshape(h,w,3)
         else:
             self.image = None
 
-
-class SensingDataUnpacker:
-    def __init__(self):
+"""
+#   Snapshot formatting and managing class
+#       --> use callback to be informed when a sensing snapshot has been received
+"""
+class SensingMessageManager:
+    def __init__(self, received_msg_callback = None):
         self.pending_data = b''
+        self.received_msg_callback = received_msg_callback
 
-    def add_data(self, data):
-        self.pending_data += data
+    def pack(self, snapshot):
+        data = snapshot.pack()
+        data = struct.pack(">i", len(data)) + data
+
+        return data
+
+
+    def add_message_chunk(self, chunk):
+        self.pending_data += chunk
+
+        sizeheader = struct.calcsize(">i")
+        message_size = struct.unpack(">i", self.pending_data[:sizeheader])[0]
+
+        print("expecting data size =", message_size, " <? ", len(self.pending_data))
+
+        if message_size+sizeheader <= len(self.pending_data):
+            print("Recv full message")
+            snapshot = SensingSnapshot()
+
+            snapshot.unpack(self.pending_data[sizeheader:sizeheader+message_size])
+            print("self.received_msg_callback =", self.received_msg_callback)
+            if self.received_msg_callback is not None:
+                print("callbacking")
+                self.received_msg_callback(snapshot)
+
+            self.pending_data = self.pending_data[sizeheader+message_size:]
