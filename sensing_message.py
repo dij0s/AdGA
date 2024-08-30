@@ -7,6 +7,9 @@ def iter_unpack(format, data):
     nbr_bytes = struct.calcsize(format)
     return struct.unpack(format, data[:nbr_bytes]), data[nbr_bytes:]
 
+"""
+    SensingSnapshot is a packing/unpacking class for diverse car simulation related information
+"""
 class SensingSnapshot:
     def __init__(self):
         self.car_position = (0,0,0)
@@ -47,12 +50,13 @@ class SensingSnapshot:
 
 """
 #   Snapshot formatting and managing class
-#       --> use callback to be informed when a sensing snapshot has been received
+#       --> pass it the chunks received via socket, the class correctly split and parse the received messages
+#       uses a callback to inform higher level code of reception of a complete SensingSnapshot
 """
-class SensingMessageManager:
-    def __init__(self, received_msg_callback = None):
+class SensingSnapshotManager:
+    def __init__(self, received_snapshot_callback = None):
         self.pending_data = b''
-        self.received_msg_callback = received_msg_callback
+        self.received_snapshot_callback = received_snapshot_callback
 
     def pack(self, snapshot):
         data = snapshot.pack()
@@ -74,9 +78,9 @@ class SensingMessageManager:
             snapshot = SensingSnapshot()
 
             snapshot.unpack(self.pending_data[sizeheader:sizeheader+message_size])
-            print("self.received_msg_callback =", self.received_msg_callback)
-            if self.received_msg_callback is not None:
+            print("self.received_msg_callback =", self.received_snapshot_callback)
+            if self.received_snapshot_callback is not None:
                 print("callbacking")
-                self.received_msg_callback(snapshot)
+                self.received_snapshot_callback(snapshot)
 
             self.pending_data = self.pending_data[sizeheader+message_size:]

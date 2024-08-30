@@ -407,6 +407,9 @@ class Car(Entity):
         if held_keys["g"]:
             self.reset_car()
 
+        if held_keys["v"]:
+            self.multiray_sensor.set_enabled_rays(not self.multiray_sensor.enabled)
+
         # Reset the car's position if y value is less than -100
         if self.y <= -100:
             self.reset_car()

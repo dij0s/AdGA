@@ -5,6 +5,10 @@ import imageio
 
 from sensing_message import *
 
+"""
+    Example of connection & data reception 
+        SimpleCollector provide an example of the classes interaction 
+"""
 class SimpleCollector:
     def __init__(self):
         self.data = []
@@ -13,7 +17,7 @@ class SimpleCollector:
         self.socket.connect(("127.0.0.1", 7654))
         self.socket.setblocking(False)
 
-        self.msg_mngr = SensingMessageManager(self.process_sensing_message)
+        self.msg_mngr = SensingSnapshotManager(self.process_sensing_message)
 
     def recv_msg(self):
         try:
@@ -39,13 +43,19 @@ class SimpleCollector:
 if __name__ == "__main__":
     collector = SimpleCollector()
 
-    time.sleep(2)
-    collector.socket.send(b'set ray hidden;')
+    time.sleep(1)
+    #   After a second instruct the car to start moving forward
+    collector.socket.send(b'push forward;')
+
+    #   Collect sensing snapshot for 5 seconds
     x = 0
-    while x < 10:
+    while x < 8:
         collector.recv_msg()
         x += 1
         time.sleep(0.5)
+
+    #   After 4 seconds -> instruct car to stop and reset
+    collector.socket.send(b'release forward;reset;')
 
     """
     time.sleep(1)

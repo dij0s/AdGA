@@ -3,7 +3,7 @@ from ursina import *
 import socket
 import numpy as np
 
-from sensing_message import SensingSnapshot, SensingMessageManager
+from sensing_message import SensingSnapshot, SensingSnapshotManager
 from remote_commands import RemoteCommandParser
 
 REMOTE_CONTROLLER_VERBOSE = False
@@ -59,7 +59,7 @@ class RemoteController(Entity):
 
             snapshot.image = image
 
-            msg_mngr = SensingMessageManager()
+            msg_mngr = SensingSnapshotManager()
             data = msg_mngr.pack(snapshot)
 
             print("Sending #bytes =", len(data))
