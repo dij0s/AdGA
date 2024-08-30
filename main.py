@@ -3,6 +3,7 @@ from direct.stdpy import thread
 
 from car import Car
 from remote_controller import RemoteController
+from raycast_sensor import *
 
 
 from sun import SunLight
@@ -14,21 +15,13 @@ Text.default_resolution = 1080 * Text.size
 
 # Window
 window.vsync = True # Set to false to uncap FPS limit of 60
-app = Ursina(size=(640,640))
+app = Ursina(size=(1280,1024))
 window.title = "Rally"
 window.borderless = False
 window.show_ursina_splash = True
 window.cog_button.disable()
 window.fps_counter.enable()
 window.exit_button.disable()
-
-if sys.platform != "darwin":
-    window.fullscreen = False
-else:
-    window.position = Vec2(
-        int((window.screen_resolution[0] - window.fullscreen_size[0]) / 2),
-        int((window.screen_resolution[1] - window.fullscreen_size[1]) / 2)
-    )
 
 # Starting new thread for assets
 
@@ -42,6 +35,8 @@ def load_assets():
         "forest_track_bounds.obj",
         # Track Details
         "trees-forest.obj", "thintrees-forest.obj",
+        # Utils
+        "line.obj"
     ]
 
     textures_to_load = [
@@ -56,7 +51,9 @@ def load_assets():
         "particle_forest_track.png",
         # Cosmetic Textures + Icons
         "viking_helmet.png", "surfinbird.png", "surfboard.png", "viking_helmet-icon.png", "duck-icon.png",
-        "banana-icon.png", "surfinbird-icon.png"
+        "banana-icon.png", "surfinbird-icon.png",
+        #Utils
+        "red.png"
     ]
 
     for i, m in enumerate(models_to_load):
@@ -75,6 +72,8 @@ except Exception as e:
 car = Car()
 car.sports_car()
 
+
+multi_sensor = MultipleRaySensor(car, 11, 90)
 remote_controller = RemoteController(car = car)
 
 # Tracks

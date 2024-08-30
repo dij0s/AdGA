@@ -4,12 +4,12 @@ Command must be followed by a semi colon !
 
 Remote control protocol
 #   Car controls
-'push|release forw|left|right|brake;'
+'push|release forward|left|right|back;'
 
 #   set reset parameters
-'setposition x,y,z;'
-'setrotation a;'
-'setspeed x,y,z;'
+'set position x,y,z;' x/y/z are english style floats (with dot for decimal separator)
+'set speed x,y,z;' x/y/z are english style floats (with dot for decimal separator)
+'set rotation a;' a is an angle in degreees
 'reset;'
 
 #   Data message

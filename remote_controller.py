@@ -1,6 +1,7 @@
 
 from ursina import *
 import socket
+import struct
 
 from protocol import RemoteCommandParser
 
@@ -9,7 +10,6 @@ REMOTE_CONTROLLER_VERBOSE = False
 def printv(str):
     if REMOTE_CONTROLLER_VERBOSE:
         print(str)
-
 
 class RemoteController(Entity):
     def __init__(self, car = None, connection_port = 7654):
@@ -29,9 +29,28 @@ class RemoteController(Entity):
         self.reset_speed = (0,0,0)
         self.reset_rotation = 0
 
+        self.sensing_period = 0.1
+        self.last_sensing = -1
+
     def update(self):
         self.update_network()
         self.process_remote_commands()
+
+    def process_sensing(self):
+        if self.car is None:
+            return
+
+        if time.time() - self.last_sensing >= self.sensing_period:
+            sensing_data = b''
+
+            x,y,z = self.car.world_position
+            sensing_data += struct.pack(">fff", x, y, z)
+
+            s = self.car.speed
+            sensing_data += struct.pack(">f", s)
+
+
+            self.last_sensing = time.time()
 
     def process_remote_commands(self):
         if self.car is None:

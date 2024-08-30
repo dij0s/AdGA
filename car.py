@@ -203,87 +203,6 @@ class Car(Entity):
             if self.timer_running:
                 self.count += time.dt
                 self.reset_count += time.dt
-        # Time Trial Gamemode
-        elif self.gamemode == "time trial":
-            self.laps_text.text = str(self.laps)
-            if self.timer_running:
-                self.count -= time.dt
-                self.reset_count -= time.dt
-                if self.count <= 0.0:
-                    self.count = 100.0
-                    self.reset_count = 100.0
-                    self.timer_running = False
-
-                    if self.laps >= self.laps_hs:
-                        self.laps_hs = self.laps
-
-                    self.laps = 0
-
-                    if self.sand_track.enabled:
-                        self.sand_track_laps = self.laps_hs
-                    elif self.grass_track.enabled:
-                        self.grass_track_laps = self.laps_hs
-                    elif self.snow_track.enabled:
-                        self.snow_track_laps = self.laps_hs
-                    elif self.forest_track.enabled:
-                        self.forest_track_laps = self.laps_hs
-                    elif self.savannah_track.enabled:
-                        self.savannah_track_laps = self.laps_hs
-                    elif self.lake_track.enabled:
-                        self.lake_track_laps = self.laps_hs
-
-                    self.start_time = False
-
-                    self.reset_car()
-        # Drift Gamemode
-        elif self.gamemode == "drift":
-            self.timer.text = str(int(self.drift_score))
-            self.drift_text.text = str(int(self.count))
-            self.drift_timer.text = str(float(round(self.drift_time, 1)))
-            self.laps_text.disable()
-            if self.timer_running:
-                self.drift_time -= time.dt
-                if self.drifting and held_keys["w"]:
-                    self.count += self.drift_multiplier * time.dt
-                    self.drift_multiplier += time.dt * 10
-                    self.start_drift = True
-                    self.drift_text.visible = True
-                    self.drift_text.x = 0
-
-                    if abs(100 - self.count) <= 5 or abs(200 - self.count) <= 20:
-                        if not self.get_hundred:
-                            self.animate_text(self.drift_text, 1.7, 1.1)
-                            self.get_hundred = True
-                    if abs(1000 - self.count) <= 10 or abs(2000 - self.count) <= 50:
-                        if not self.get_thousand:
-                            self.animate_text(self.drift_text, 1.7, 1.1)
-                            self.get_thousand = True
-                    if abs(5000 - self.count) <= 20 or abs(10000 - self.count) <= 100:
-                        if not self.get_fivethousand:
-                            self.animate_text(self.drift_text, 1.7, 1.1)
-                            self.get_fivethousand = True
-
-                    if self.count >= 100 and self.count < 1000:
-                        self.drift_text.color = color.hex("#6eb1ff")
-                    elif self.count >= 1000 and self.count < 5000:
-                        self.drift_text.color = color.gold
-                    elif self.count >= 5000:
-                        self.drift_text.color = color.red
-                    else:
-                        self.drift_text.color = color.white
-                else:
-                    if self.start_drift:
-                        self.reset_drift()
-                        self.start_drift = False
-                if self.drift_time <= 0:
-                    self.drift_timer.shake()
-                    self.reset_car()
-
-        if self.gamemode != "drift":
-            self.timer.text = str(round(self.count, 1))
-            self.reset_count_timer.text = str(round(self.reset_count, 1))
-        else:
-            self.reset_count_timer.text = str(int(self.reset_count))
 
         # Read the username
         self.username_text = "Username"
@@ -628,7 +547,7 @@ class Car(Entity):
             self.rotation = self.reset_rotation
 
         #   Project car directly on ground when resetting
-        y_ray = raycast(origin = self.world_position, direction = (0,-1,0), ignore = [self,])
+        y_ray = raycast(origin = self.reset_position, direction = (0,-1,0), ignore = [self,])
         self.y = y_ray.world_point.y + 1.4
 
         camera.world_rotation_y = self.rotation_y
