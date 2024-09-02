@@ -17,9 +17,6 @@ class Car(Entity):
             rotation = rotation,
         )
 
-        # Rotation parent
-        self.rotation_parent = Entity()
-
         # Controls
         self.controls = "wasd"
 
@@ -27,7 +24,7 @@ class Car(Entity):
         self.speed = 0
         self.velocity_y = 0
         self.rotation_speed = 0
-        self.max_rotation_speed = 2.6
+        self.max_rotation_speed = 2.0
         self.steering_amount = 8
         self.topspeed = topspeed
         self.braking_strenth = braking_strength
@@ -78,11 +75,6 @@ class Car(Entity):
         
         self.trails = [self.trail_renderer1, self.trail_renderer2, self.trail_renderer3, self.trail_renderer4]
         self.start_trail = True
-
-        # Audio
-        self.audio = True
-        self.volume = 1
-        self.start_fall = True
 
         # Collision
         self.copy_normals = False
@@ -151,8 +143,8 @@ class Car(Entity):
         self.car_type = "sports"
         self.model = "sports-car.obj"
         self.texture = "sports-red.png"
-        self.topspeed = 30
-        self.acceleration = 0.38
+        self.topspeed = 34
+        self.acceleration = 0.4
         self.drift_amount = 5
         self.turning_speed = 5
         self.min_drift_speed = 18
@@ -195,7 +187,8 @@ class Car(Entity):
             if self.pivot.rotation_y > self.rotation_y:
                 self.pivot.rotation_y -= (self.drift_speed * ((self.pivot.rotation_y - self.rotation_y) / 40)) * time.dt
                 if self.speed > 1 or self.speed < -1:
-                    self.speed += self.pivot_rotation_distance / self.drift_amount * time.dt
+                    # self.speed += self.pivot_rotation_distance / self.drift_amount * time.dt
+                    pass
                 self.camera_rotation -= self.pivot_rotation_distance / 3 * time.dt
                 self.rotation_speed -= 1 * time.dt
                 if self.pivot_rotation_distance >= 50 or self.pivot_rotation_distance <= -50:
@@ -205,7 +198,8 @@ class Car(Entity):
             if self.pivot.rotation_y < self.rotation_y:
                 self.pivot.rotation_y += (self.drift_speed * ((self.rotation_y - self.pivot.rotation_y) / 40)) * time.dt
                 if self.speed > 1 or self.speed < -1:
-                    self.speed -= self.pivot_rotation_distance / self.drift_amount * time.dt
+                    # self.speed -= self.pivot_rotation_distance / self.drift_amount * time.dt
+                    pass
                 self.camera_rotation += self.pivot_rotation_distance / 3 * time.dt
                 self.rotation_speed += 1 * time.dt
                 if self.pivot_rotation_distance >= 50 or self.pivot_rotation_distance <= -50:
@@ -236,28 +230,6 @@ class Car(Entity):
             self.particle_time = 0
             self.particles = Particles(self, self.particle_pivot.world_position - (0, 1, 0))
             self.particles.destroy(1)
-
-    def display_trails(self):
-        # TrailRenderer / Skid Marks
-        if self.graphics != "ultra fast":
-            if self.drift_speed <= self.min_drift_speed + 2 and self.start_trail:   
-                if self.pivot_rotation_distance > 60 or self.pivot_rotation_distance < -60 and self.speed > 10:
-                    for trail in self.trails:
-                        trail.start_trail()
-                    self.start_trail = False
-                    self.drifting = True
-                else:
-                    self.drifting = False
-            elif self.drift_speed > self.min_drift_speed + 2 and not self.start_trail:
-                if self.pivot_rotation_distance < 60 or self.pivot_rotation_distance > -60:
-                    for trail in self.trails:
-                        if trail.trailing:
-                            trail.end_trail()
-                    self.start_trail = True
-                    self.drifting = False
-                self.drifting = False
-            if self.speed < 10:
-                self.drifting = False
 
     def hand_brake(self):
         # Hand Braking
@@ -352,7 +324,6 @@ class Car(Entity):
             self.driving = True
 
             self.display_particles()
-            self.display_trails()
         else:
             self.driving = False
             if self.speed > 1:
@@ -368,6 +339,29 @@ class Car(Entity):
             self.braking = True
         else:
             self.braking = False
+
+    def update_vertical_position(self, y_ray, movementY):
+        # Check if car is hitting the ground
+        if self.visible:
+            if y_ray.distance <= self.scale_y * 1.7 + abs(movementY):
+                self.velocity_y = 0
+                # Check if hitting a wall or steep slope
+                if y_ray.world_normal.y > 0.7 and y_ray.world_point.y - self.world_y < 0.5:
+                    # Set the y value to the ground's y value
+                    self.y = y_ray.world_point.y + 1.4
+                    self.hitting_wall = False
+                else:
+                    # Car is hitting a wall
+                    self.hitting_wall = True
+
+                if self.copy_normals:
+                    self.ground_normal = self.position + y_ray.world_normal
+                else:
+                    self.ground_normal = self.position + (0, 180, 0)
+            else:
+                self.y += movementY * 50 * time.dt
+                self.velocity_y -= 50 * time.dt
+
 
     def update(self):
         self.update_display_infos()
@@ -395,61 +389,15 @@ class Car(Entity):
             self.update_speed()
             self.hand_brake()
 
-        # If Car is not hitting the ground, stop the trail
-        if self.graphics != "ultra fast":
-            if y_ray.distance > 2.5:
-                if self.trail_renderer1.trailing:
-                    for trail in self.trails:
-                        trail.end_trail()
-                    self.start_trail = True
-
         self.compute_steering()
         self.cap_kinetic_parameters()
         self.check_respawn()
 
-        # Rotation
-        self.rotation_parent.position = self.position
-
-        # Lerps the car's rotation to the rotation parent's rotation (Makes it smoother)
-        self.rotation_x = lerp(self.rotation_x, self.rotation_parent.rotation_x, 20 * time.dt)
-        self.rotation_z = lerp(self.rotation_z, self.rotation_parent.rotation_z, 20 * time.dt)
-
-        # Check if car is hitting the ground
-        if self.visible:
-            if y_ray.distance <= self.scale_y * 1.7 + abs(movementY):
-                self.velocity_y = 0
-                # Check if hitting a wall or steep slope
-                if y_ray.world_normal.y > 0.7 and y_ray.world_point.y - self.world_y < 0.5:
-                    # Set the y value to the ground's y value
-                    self.y = y_ray.world_point.y + 1.4
-                    self.hitting_wall = False
-                else:
-                    # Car is hitting a wall
-                    self.hitting_wall = True
-
-                if self.copy_normals:
-                    self.ground_normal = self.position + y_ray.world_normal
-                else:
-                    self.ground_normal = self.position + (0, 180, 0)
-
-                # Rotates the car according to the grounds normals
-                if not self.hitting_wall:
-                    self.rotation_parent.look_at(self.ground_normal, axis = "up")
-                    self.rotation_parent.rotate((0, self.rotation_y + 180, 0))
-                else:
-                    self.rotation_parent.rotation = self.rotation
-
-                if self.start_fall and self.audio:
-                    self.start_fall = False
-            else:
-                self.y += movementY * 50 * time.dt
-                self.velocity_y -= 50 * time.dt
-                self.rotation_parent.rotation = self.rotation
-                self.start_fall = True
+        self.update_vertical_position(y_ray, movementY)
 
         # Movement
-        movementX = self.pivot.forward[0] * self.speed * time.dt
-        movementZ = self.pivot.forward[2] * self.speed * time.dt
+        movementX = lerp(self.forward[0], self.pivot.forward[0], time.dt * 4) * self.speed * time.dt
+        movementZ = lerp(self.forward[2], self.pivot.forward[2], time.dt * 4) * self.speed * time.dt
 
         # Collision Detection
         self.check_collision_and_update(movementX, movementZ, direction)
