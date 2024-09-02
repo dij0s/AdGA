@@ -72,7 +72,8 @@ car.sports_car()
 remote_controller = RemoteController(car = car)
 
 # Tracks
-forest_track = ForestTrack(car)
+track_metadata = "forest_track_metadata.json"
+forest_track = ForestTrack(car, track_metadata)
 car.forest_track = forest_track
 
 car.multiray_sensor = MultiRaySensor(car, 11, 90)
