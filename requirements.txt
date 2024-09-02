@@ -2,3 +2,4 @@ ursina==5.0.0
 ursinanetworking==2.1.4
 imageio==2.35.1
 numpy==2.1.0
+screeninfo=0.8.1
