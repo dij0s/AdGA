@@ -8,7 +8,7 @@ from raycast_sensor import *
 
 from sun import SunLight
 
-from track import ForestTrack
+from track import Track
 
 Text.default_font = "./assets/Roboto.ttf"
 Text.default_resolution = 1080 * Text.size
@@ -73,7 +73,7 @@ remote_controller = RemoteController(car = car)
 
 # Tracks
 track_metadata = "forest_track_metadata.json"
-forest_track = ForestTrack(car, track_metadata)
+forest_track = Track(car, track_metadata)
 car.forest_track = forest_track
 
 car.multiray_sensor = MultiRaySensor(car, 11, 90)

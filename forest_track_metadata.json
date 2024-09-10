@@ -41,5 +41,7 @@
             "model": "thintrees-forest.obj",
             "texture": "thintree-forest.png"
         }
+    ], 
+    "obstacles": [
     ]
 }

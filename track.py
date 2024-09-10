@@ -2,7 +2,7 @@ from ursina import *
 import json
 
 
-class ForestTrack(Entity):
+class Track(Entity):
     def __init__(self, car, metadata_file):
 
         with open(metadata_file, 'r') as f:
@@ -18,6 +18,7 @@ class ForestTrack(Entity):
         finish_line_rotation = tuple(data["finish_line_rotation"])
         finish_line_scale = tuple(data["finish_line_scale"])
         details = data["details"]
+        obstacles = data["obstacles"]
         
         super().__init__(model = track_model, texture = track_texture,
                          position = origin_position, rotation = origin_rotation, 
@@ -38,6 +39,12 @@ class ForestTrack(Entity):
         self.details = []
         for detail in details:
             self.details.append(Entity(model = detail["model"], texture = detail["texture"],
+                            position = origin_position, rotation_y = origin_rotation[1], 
+                            scale = origin_scale[1]))
+        self.obstacles = []
+        for obstacle in obstacles:
+            self.obstacles.append(Entity(model = detail["model"], texture = detail["texture"],
+                            collider = "mesh",
                             position = origin_position, rotation_y = origin_rotation[1], 
                             scale = origin_scale[1]))
 
