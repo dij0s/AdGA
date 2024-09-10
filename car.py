@@ -8,7 +8,7 @@ sign = lambda x: -1 if x < 0 else (1 if x > 0 else 0)
 Text.default_resolution = 1080 * Text.size
 
 class Car(Entity):
-    def __init__(self, position = (0, 0, 4), rotation = (0, 0, 0), topspeed = 30, acceleration = 0.35, braking_strength = 30, friction = 1.5, camera_speed = 8, drift_speed = 35):
+    def __init__(self, position = (0, 0, 4), rotation = (0, 0, 0), topspeed = 30, acceleration = 0.35, braking_strength = 30, friction = 1.5, camera_speed = 8):
         super().__init__(
             model = "sports-car.obj",
             texture = "sports-red.png",
@@ -24,18 +24,14 @@ class Car(Entity):
         self.speed = 0
         self.velocity_y = 0
         self.rotation_speed = 0
-        self.max_rotation_speed = 2.0
+        self.max_rotation_speed = 1.6
         self.steering_amount = 8
         self.topspeed = topspeed
         self.braking_strenth = braking_strength
         self.camera_speed = camera_speed
         self.acceleration = acceleration
         self.friction = friction
-        self.drift_speed = drift_speed
-        self.drift_amount = 4.5
         self.turning_speed = 5
-        self.max_drift_speed = 40
-        self.min_drift_speed = 20
         self.pivot_rotation_distance = 1
 
         self.reset_position = (12, -35, 76)
@@ -143,14 +139,11 @@ class Car(Entity):
         self.car_type = "sports"
         self.model = "sports-car.obj"
         self.texture = "sports-red.png"
-        self.topspeed = 34
-        self.acceleration = 0.4
-        self.drift_amount = 5
-        self.turning_speed = 5
-        self.min_drift_speed = 18
-        self.max_drift_speed = 38
-        self.max_rotation_speed = 3
-        self.steering_amount = 8
+        self.topspeed = 40
+        self.acceleration = 0.6
+        self.turning_speed = 6
+        self.max_rotation_speed = 1.6
+        self.steering_amount = 9
         self.particle_pivot.position = (0, -1, -1.5)
         self.trail_pivot.position = (0, -1, 1.5)
 
@@ -180,32 +173,6 @@ class Car(Entity):
             #camera.rotation_x = self.camera_rotation
             camera.world_position = self.camera_pivot.world_position
             camera.world_rotation_y = self.world_rotation_y
-
-    def update_drift(self):
-        # Drifting
-        if self.pivot.rotation_y != self.rotation_y:
-            if self.pivot.rotation_y > self.rotation_y:
-                self.pivot.rotation_y -= (self.drift_speed * ((self.pivot.rotation_y - self.rotation_y) / 40)) * time.dt
-                if self.speed > 1 or self.speed < -1:
-                    # self.speed += self.pivot_rotation_distance / self.drift_amount * time.dt
-                    pass
-                self.camera_rotation -= self.pivot_rotation_distance / 3 * time.dt
-                self.rotation_speed -= 1 * time.dt
-                if self.pivot_rotation_distance >= 50 or self.pivot_rotation_distance <= -50:
-                    self.drift_speed += self.pivot_rotation_distance / 5 * time.dt
-                else:
-                    self.drift_speed -= self.pivot_rotation_distance / 5 * time.dt
-            if self.pivot.rotation_y < self.rotation_y:
-                self.pivot.rotation_y += (self.drift_speed * ((self.rotation_y - self.pivot.rotation_y) / 40)) * time.dt
-                if self.speed > 1 or self.speed < -1:
-                    # self.speed -= self.pivot_rotation_distance / self.drift_amount * time.dt
-                    pass
-                self.camera_rotation += self.pivot_rotation_distance / 3 * time.dt
-                self.rotation_speed += 1 * time.dt
-                if self.pivot_rotation_distance >= 50 or self.pivot_rotation_distance <= -50:
-                    self.drift_speed -= self.pivot_rotation_distance / 5 * time.dt
-                else:
-                    self.drift_speed += self.pivot_rotation_distance / 5 * time.dt
 
     def check_respawn(self):
         # Respawn
@@ -238,36 +205,37 @@ class Car(Entity):
                 self.rotation_speed -= 3 * time.dt
             elif self.rotation_speed > 0:
                 self.rotation_speed += 3 * time.dt
-            self.drift_speed -= 40 * time.dt
             self.speed -= 20 * time.dt
-            self.max_rotation_speed = 3.0
 
     def compute_steering(self):
         # Steering
         self.rotation_y += self.rotation_speed * 50 * time.dt
 
+        # The car's linear momentum decreases the rotation.
         if self.rotation_speed > 0:
             self.rotation_speed -= self.speed / 6 * time.dt
         elif self.rotation_speed < 0:
             self.rotation_speed += self.speed / 6 * time.dt
 
-        if self.speed > 1 or self.speed < -1:
+        # Can only turn if |speed| > 0.5
+        if self.speed > 0.5 or self.speed < -0.5:
             if held_keys[self.controls[1]] or held_keys["left arrow"]:
                 self.rotation_speed -= self.steering_amount * time.dt
-                self.drift_speed -= 5 * time.dt
+
+                # Turning decreases our speed.
                 if self.speed > 1:
                     self.speed -= self.turning_speed * time.dt
                 elif self.speed < 0:
                     self.speed += self.turning_speed / 5 * time.dt
+
             elif held_keys[self.controls[3]] or held_keys["right arrow"]:
                 self.rotation_speed += self.steering_amount * time.dt
-                self.drift_speed -= 5 * time.dt
                 if self.speed > 1:
                     self.speed -= self.turning_speed * time.dt
                 elif self.speed < 0:
                     self.speed += self.turning_speed / 5 * time.dt
+            # If no keys pressed, the rotation speed goes down.
             else:
-                self.drift_speed += 15 * time.dt
                 if self.rotation_speed > 0:
                     self.rotation_speed -= 5 * time.dt
                 elif self.rotation_speed < 0:
@@ -283,12 +251,6 @@ class Car(Entity):
             self.speed = -15
         if self.speed <= 0:
             self.pivot.rotation_y = self.rotation_y
-
-        # Cap the drifting
-        if self.drift_speed <= self.min_drift_speed:
-            self.drift_speed = self.min_drift_speed
-        if self.drift_speed >= self.max_drift_speed:
-            self.drift_speed = self.max_drift_speed
 
         # Cap the steering
         if self.rotation_speed >= self.max_rotation_speed:
@@ -335,7 +297,6 @@ class Car(Entity):
         # Braking
         if held_keys[self.controls[2] or held_keys["down arrow"]]:
             self.speed -= self.braking_strenth * time.dt
-            self.drift_speed -= 20 * time.dt
             self.braking = True
         else:
             self.braking = False
@@ -379,8 +340,6 @@ class Car(Entity):
 
         # The y rotation distance between the car and the pivot
         self.pivot_rotation_distance = (self.rotation_y - self.pivot.rotation_y)
-
-        self.update_drift()
 
         # Gravity
         movementY = self.velocity_y / 50
@@ -459,17 +418,6 @@ class Car(Entity):
         self.count = self.reset_count
         self.timer.enable()
         self.reset_count_timer.disable()
-
-    def reset_drift(self):
-        """
-        Resets the drift
-        """
-        self.animate_text(self.drift_text, 1.7, 1.1)
-        invoke(self.drift_text.animate_position, (-0.8, 0.43), 0.3, curve = curve.out_expo, delay = 0.3)
-        invoke(self.reset_drift_text, delay = 0.4)
-        self.get_hundred = False
-        self.get_thousand = False
-        self.get_fivethousand = False
 
     def animate_text(self, text, top = 1.2, bottom = 0.6):
         """
