@@ -112,9 +112,10 @@ ESCAPE - Pause Menu
 G - Respawn
 
 # Run in Docker 
-Run the following commands in the root folder of the repo to build the image and run it.
-`docker build -t rally .`
-`docker run -it --rm rally`
+Run the following command in the root folder of the repo to build the image and run it
+
+
+`docker compose up`
 
 # Credits
 This code is based on the repository [https://github.com/mandaw2014/Rally](https://github.com/mandaw2014/Rally)

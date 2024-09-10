@@ -1,0 +1,13 @@
+# docker-compose.yaml
+services:
+  firefox:
+    image: rally
+    build: .
+    environment:
+      DISPLAY: ${DISPLAY}
+    network_mode: host
+    volumes:
+      - ${XAUTHORITY}:/root/.Xauthority
+      - /tmp/.X11-unix:/tmp.X11-unix
+    devices:
+      - "/dev/dri/card0:/dev/dri/card0"
