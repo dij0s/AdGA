@@ -112,10 +112,21 @@ ESCAPE - Pause Menu
 G - Respawn
 
 # Run in Docker 
-Run the following command in the root folder of the repo to build the image and run it
+We provide two docker containers to run the game: one that launches the usual graphic version (only runs on Linux host with X11), 
+and one that runs the game on a headless server (will be used for model training).
 
 
-`docker compose up`
+The graphical container can be run using
+
+
+`docker compose run gui`
+
+
+and the headless one can be run using 
+
+
+`docker compose run headless`
+
 
 # Credits
 This code is based on the repository [https://github.com/mandaw2014/Rally](https://github.com/mandaw2014/Rally)
