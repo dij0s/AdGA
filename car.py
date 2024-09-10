@@ -364,6 +364,10 @@ class Car(Entity):
 
 
     def update(self):
+        # Exit if esc pressed.
+        if held_keys["escape"]:
+            quit()
+        
         self.update_display_infos()
 
         self.pivot.position = self.position
