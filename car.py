@@ -13,7 +13,7 @@ class Car(Entity):
         super().__init__(
             model = "sports-car.obj",
             texture = "sports-red.png",
-            collider = "box",
+            collider = "sphere",
             position = position,
             rotation = rotation,
         )
@@ -267,18 +267,6 @@ class Car(Entity):
         elif self.camera_rotation <= 30:
             self.camera_rotation = 30
 
-    def update_display_infos(self):
-        # Stopwatch/Timer
-        # Race Gamemode
-        if self.gamemode == "race":
-            self.laps_text.disable()
-            if self.timer_running:
-                self.count += time.dt
-                self.reset_count += time.dt
-
-        # Read the username
-        self.username_text = "Username"
-
     def update_speed(self):
         # Driving
         if held_keys[self.controls[0]] or held_keys["up arrow"]:
@@ -331,8 +319,6 @@ class Car(Entity):
         # Exit if esc pressed.
         if held_keys["escape"]:
             quit()
-        
-        self.update_display_infos()
 
         self.pivot.position = self.position
         self.c_pivot.position = self.position
