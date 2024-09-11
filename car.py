@@ -1,3 +1,4 @@
+import setuptools
 from ursina import *
 from ursina import curve
 from particles import Particles, TrailRenderer
@@ -34,8 +35,8 @@ class Car(Entity):
         self.turning_speed = 5
         self.pivot_rotation_distance = 1
 
-        self.reset_position = (12, -35, 76)
-        self.reset_rotation = (0, 90, 0)
+        self.reset_position = (0, 0, 0)
+        self.reset_rotation = (0, 0, 0)
 
         # Camera Follow
         self.camera_angle = "top"
@@ -76,13 +77,8 @@ class Car(Entity):
         self.copy_normals = False
         self.hitting_wall = False
 
-        # Making tracks accessible in update
-        self.sand_track = None
-        self.grass_track = None
-        self.snow_track = None
-        self.forest_track = None
-        self.savannah_track = None
-        self.lake_track = None
+
+        self.track = None
 
         # Graphics
         self.graphics = "fancy"
@@ -134,6 +130,13 @@ class Car(Entity):
         invoke(self.update_model_path, delay = 1)
 
         self.multiray_sensor = None
+
+    def set_track(self, track):
+        self.track = track
+        self.reset_position = track.car_default_reset_position
+        self.reset_orientation = track.car_default_reset_orientation
+        self.position = self.reset_position
+        self.rotation_y = self.reset_orientation[1]
 
     def sports_car(self):
         self.car_type = "sports"
@@ -369,13 +372,11 @@ class Car(Entity):
         """
         Resets the car
         """
-        if self.forest_track.enabled:
-            self.position = self.reset_position
-            self.rotation = self.reset_rotation
-
         #   Project car directly on ground when resetting
+        self.position = self.reset_position
         y_ray = raycast(origin = self.reset_position, direction = (0,-1,0), ignore = [self,])
         self.y = y_ray.world_point.y + 1.4
+        self.rotation_y = self.reset_orientation[1]
 
         camera.world_rotation_y = self.rotation_y
         self.speed = 0

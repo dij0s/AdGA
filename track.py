@@ -1,67 +1,88 @@
 from ursina import *
 import json
+from direct.stdpy import thread
 
 
 class Track(Entity):
-    def __init__(self, car, metadata_file):
+    def __init__(self, metadata_file):
 
         with open(metadata_file, 'r') as f:
-            data = json.load(f)
+            self.data = json.load(f)
 
-        track_model = data["track_model"]
-        track_texture = data["track_texture"]
-        boundaries_model = data["boundaries_model"]
-        origin_position = tuple(data["origin_position"])
-        origin_rotation = tuple(data["origin_rotation"])
-        origin_scale = tuple(data["origin_scale"])
-        finish_line_position = tuple(data["finish_line_position"])
-        finish_line_rotation = tuple(data["finish_line_rotation"])
-        finish_line_scale = tuple(data["finish_line_scale"])
-        details = data["details"]
-        obstacles = data["obstacles"]
+
+        track_model = self.data["track_model"]
+        track_texture = self.data["track_texture"]
+
+        origin_position = tuple(self.data["origin_position"])
+        origin_rotation = tuple(self.data["origin_rotation"])
+        origin_scale = tuple(self.data["origin_scale"])
+
+        self.car_default_reset_position = tuple(self.data["car_default_reset_position"])
+        self.car_default_reset_orientation = tuple(self.data["car_default_reset_orientation"])
+
+        finish_line_position = tuple(self.data["finish_line_position"])
+        finish_line_rotation = tuple(self.data["finish_line_rotation"])
+        finish_line_scale = tuple(self.data["finish_line_scale"])
         
         super().__init__(model = track_model, texture = track_texture,
                          position = origin_position, rotation = origin_rotation, 
                          scale = origin_scale, collider = "mesh")
 
-        self.car = car
-
         self.finish_line = Entity(model = "cube", position = finish_line_position,
                                   rotation = finish_line_rotation, scale = finish_line_scale, visible = False)
-        self.boundaries = Entity(model = boundaries_model,
-                                 collider = "mesh",
-                                 position = origin_position, rotation = origin_rotation,
-                                 scale = origin_scale, visible = False)
-        self.track = [
-            self.finish_line, self.boundaries
-        ]
+        self.track = [ self.finish_line ]
 
         self.details = []
-        for detail in details:
+        for detail in self.data["details"]:
             self.details.append(Entity(model = detail["model"], texture = detail["texture"],
                             position = origin_position, rotation_y = origin_rotation[1], 
                             scale = origin_scale[1]))
         self.obstacles = []
-        for obstacle in obstacles:
-            self.obstacles.append(Entity(model = detail["model"], texture = detail["texture"],
+        for obstacle in self.data["obstacles"]:
+            self.obstacles.append(Entity(model = obstacle["model"],
                             collider = "mesh",
                             position = origin_position, rotation_y = origin_rotation[1], 
-                            scale = origin_scale[1]))
+                            scale = origin_scale[1], visible = False))
 
         self.disable()
-
-        for i in self.track:
-            i.disable()
-        for i in self.details:
-            i.disable()
         
         self.played = False
         self.unlocked = False
 
-    def update(self):
-        if self.car.simple_intersects(self.finish_line):
-            if self.car.anti_cheat == 1:
-                self.car.timer_running = True
-                self.car.anti_cheat = 0
-                if self.car.gamemode != "drift":
-                    invoke(self.car.reset_timer, delay = 3)
+        self.deactivate()
+
+    def deactivate(self):
+        for i in self.track:
+            i.disable()
+        for i in self.details:
+            i.disable()
+        for i in self.obstacles:
+            i.disable()
+        self.disable()
+
+    def activate(self, activate_details = True):
+        self.enable()
+        for i in self.track:
+            i.enable()
+        for i in self.obstacles:
+            i.enable()
+        if activate_details:
+            for i in self.details:
+                i.enable()
+
+
+    def load_assets(self, global_models = [], global_texs = []):
+        def inner_load_assets():
+            models_to_load = list(set(global_models + [detail["model"] for detail in self.data["details"]] + [obs["model"] for obs in self.data["obstacles"]]))
+            textures_to_load = list(set(global_texs + [detail["texture"] for detail in self.data["details"]] + [obs["texture"] for obs in self.data["obstacles"]]))
+
+            for i, m in enumerate(models_to_load):
+                load_model(m)
+
+            for i, t in enumerate(textures_to_load):
+                load_texture(t)
+
+        try:
+            thread.start_new_thread(function=inner_load_assets, args="")
+        except Exception as e:
+            print("error starting thread", e)
