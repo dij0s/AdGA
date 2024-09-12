@@ -1,7 +1,10 @@
+import timeit
+
 import setuptools
 from ursina import *
 from ursina import curve
 from particles import Particles, TrailRenderer
+from math import pow, atan2
 from raycast_sensor import MultiRaySensor
 import json
 
@@ -40,7 +43,7 @@ class Car(Entity):
 
         # Camera Follow
         self.camera_angle = "top"
-        self.camera_offset = (0, 60, -70)
+        self.camera_offset = (0, 30, -35) # <-- Stuff to change to change the camera distance
         self.camera_rotation = 40
         self.camera_follow = False
         self.change_camera = False
@@ -142,28 +145,15 @@ class Car(Entity):
         self.car_type = "sports"
         self.model = "sports-car.obj"
         self.texture = "sports-red.png"
-        self.topspeed = 40
-        self.acceleration = 0.6
+        self.topspeed = 50
+        self.minspeed = -15
+        self.acceleration = 25
+        self.braking_strenth = 50
         self.turning_speed = 6
         self.max_rotation_speed = 1.6
         self.steering_amount = 9
         self.particle_pivot.position = (0, -1, -1.5)
         self.trail_pivot.position = (0, -1, 1.5)
-
-    def check_collision_and_update(self, movementX, movementZ, direction):
-        if movementX != 0:
-            direction = (sign(movementX), 0, 0)
-            x_ray = raycast(origin = self.world_position, direction = direction, ignore = [self, ])
-
-            if x_ray.distance > self.scale_x / 2 + abs(movementX):
-                self.x += movementX
-
-        if movementZ != 0:
-            direction = (0, 0, sign(movementZ))
-            z_ray = raycast(origin = self.world_position, direction = direction, ignore = [self, ])
-
-            if z_ray.distance > self.scale_z / 2 + abs(movementZ):
-                self.z += movementZ
 
     def update_camera(self):
         if self.camera_follow:
@@ -267,30 +257,6 @@ class Car(Entity):
         elif self.camera_rotation <= 30:
             self.camera_rotation = 30
 
-    def update_speed(self):
-        # Driving
-        if held_keys[self.controls[0]] or held_keys["up arrow"]:
-            self.speed += self.acceleration * 50 * time.dt
-            self.speed += -self.velocity_y * 4 * time.dt
-
-            self.camera_rotation -= self.acceleration * 30 * time.dt
-            self.driving = True
-
-            self.display_particles()
-        else:
-            self.driving = False
-            if self.speed > 1:
-                self.speed -= self.friction * 5 * time.dt
-            elif self.speed < -1:
-                self.speed += self.friction * 5 * time.dt
-            self.camera_rotation += self.friction * 20 * time.dt
-
-        # Braking
-        if held_keys[self.controls[2] or held_keys["down arrow"]]:
-            self.speed -= self.braking_strenth * time.dt
-            self.braking = True
-        else:
-            self.braking = False
 
     def update_vertical_position(self, y_ray, movementY):
         # Check if car is hitting the ground
@@ -320,39 +286,95 @@ class Car(Entity):
         if held_keys["escape"]:
             quit()
 
-        self.pivot.position = self.position
+        #   Process inputs & update speed
+        if held_keys[self.controls[0]] or held_keys["up arrow"]:
+            self.speed += self.acceleration * time.dt
+            self.driving = True
+
+            self.display_particles()
+        else:
+            self.driving = False
+            if self.speed > 1:
+                self.speed -= self.friction * 5 * time.dt
+            elif self.speed < -1:
+                self.speed += self.friction * 5 * time.dt
+
+        # Braking
+        if held_keys[self.controls[2] or held_keys["down arrow"]]:
+            if self.speed > 0:
+                self.speed -= self.braking_strenth * time.dt
+            else:
+                self.speed -= self.acceleration * time.dt
+            self.braking = True
+        else:
+            self.braking = False
+
+        #   Check physical constrains
+        if self.speed > self.topspeed:
+            self.speed = self.topspeed
+        elif self.speed < self.minspeed:
+            self.speed = self.minspeed
+
+        if held_keys[self.controls[1]] or held_keys["left arrow"] or held_keys[self.controls[3]] or held_keys["right arrow"]:
+            turn_right = held_keys[self.controls[3]] or held_keys["right arrow"]
+            rotation_sign = (1 if turn_right else -1)
+
+            #   Max angular speed
+            print("########")
+            normalized_speed = abs(self.speed / self.topspeed)
+            #   function to map unit speed (between 0 and max speed) to a rotation coefficient space.
+            #   Rotation radius is function of speed
+            def rotation_radius(normalized_speed):
+                min_radius = 3
+                max_radius = 25
+                return pow(normalized_speed, 1.5) * (max_radius-min_radius) + min_radius
+
+            #   Get rotation radius
+            print("normalized_speed =", normalized_speed)
+            radius = rotation_radius(normalized_speed)
+
+            print("radius =", radius)
+
+            #   Get travelled distance
+            travelled_dist = abs(self.speed * time.dt)
+            #   Project on circle radius & compute angle variation seen from the center of the circle
+            travelled_circle_center_angle = travelled_dist / radius
+            #   Compute variation in Y & X
+            dx = 1 - cos(travelled_circle_center_angle)
+            dy = sin(travelled_circle_center_angle)
+
+            print("dx,dy =", dx, " () ", dy)
+
+            da = atan2(dx, dy) / 3.14159 * 180
+            print("da =", da)
+
+            self.rotation_y += da * rotation_sign
+
+        #   Integrate speed into movement
+        dist_to_move = self.speed * time.dt
+
+        #   Check collision via recast
+        front_collision = raycast(origin = self.world_position, direction = self.forward, ignore = [self, ])
+
+        #   Detect collision
+        if front_collision.distance < self.scale_x / 2 + dist_to_move:
+            pass
+        else:
+            self.x += self.forward[0] * dist_to_move
+            self.z += self.forward[2] * dist_to_move
+
+        #   Orient car to speed
+
+
+        #self.compute_steering()
+        #self.cap_kinetic_parameters()
+        #self.check_respawn()
+
         self.c_pivot.position = self.position
         self.c_pivot.rotation_y = self.rotation_y
-        self.camera_pivot.position = self.camera_offset
-
         self.update_camera()
 
-        # The y rotation distance between the car and the pivot
-        self.pivot_rotation_distance = (self.rotation_y - self.pivot.rotation_y)
-
-        # Gravity
-        movementY = self.velocity_y / 50
-        direction = (0, sign(movementY), 0)
-
-        # Main raycast for collision
-        y_ray = raycast(origin = self.world_position, direction = (0, -1, 0), ignore = [self, ])
-
-        if y_ray.distance <= 5:
-            self.update_speed()
-            self.hand_brake()
-
-        self.compute_steering()
-        self.cap_kinetic_parameters()
-        self.check_respawn()
-
-        self.update_vertical_position(y_ray, movementY)
-
-        # Movement
-        movementX = lerp(self.forward[0], self.pivot.forward[0], time.dt * 4) * self.speed * time.dt
-        movementZ = lerp(self.forward[2], self.pivot.forward[2], time.dt * 4) * self.speed * time.dt
-
-        # Collision Detection
-        self.check_collision_and_update(movementX, movementZ, direction)
+        self.pivot.position = self.position
 
     def reset_car(self):
         """
