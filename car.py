@@ -320,20 +320,16 @@ class Car(Entity):
             rotation_sign = (1 if turn_right else -1)
 
             #   Max angular speed
-            print("########")
             normalized_speed = abs(self.speed / self.topspeed)
             #   function to map unit speed (between 0 and max speed) to a rotation coefficient space.
             #   Rotation radius is function of speed
             def rotation_radius(normalized_speed):
-                min_radius = 3
-                max_radius = 25
-                return pow(normalized_speed, 1.5) * (max_radius-min_radius) + min_radius
+                smallest_radius = 1.5
+                biggest_radius = 25
+                return pow(normalized_speed, 1.5) * (biggest_radius-smallest_radius) + smallest_radius
 
             #   Get rotation radius
-            print("normalized_speed =", normalized_speed)
             radius = rotation_radius(normalized_speed)
-
-            print("radius =", radius)
 
             #   Get travelled distance
             travelled_dist = abs(self.speed * time.dt)
@@ -343,25 +339,51 @@ class Car(Entity):
             dx = 1 - cos(travelled_circle_center_angle)
             dy = sin(travelled_circle_center_angle)
 
-            print("dx,dy =", dx, " () ", dy)
-
             da = atan2(dx, dy) / 3.14159 * 180
-            print("da =", da)
 
             self.rotation_y += da * rotation_sign
 
         #   Integrate speed into movement
-        dist_to_move = self.speed * time.dt
+        total_dist_to_move = self.speed * time.dt
 
         #   Check collision via recast
-        front_collision = raycast(origin = self.world_position, direction = self.forward, ignore = [self, ])
 
-        #   Detect collision
-        if front_collision.distance < self.scale_x / 2 + dist_to_move:
-            pass
-        else:
-            self.x += self.forward[0] * dist_to_move
-            self.z += self.forward[2] * dist_to_move
+
+        #   Return residual distance to travel and residual speed.
+        def move_car(distance_to_travel, direction):
+            front_collision = boxcast(origin = self.world_position, direction = self.forward * direction, thickness = (0.1, 0.1), distance = self.scale_x + distance_to_travel, ignore = [self, ])
+
+            #   Detect collision
+            if front_collision.distance < self.scale_x + distance_to_travel:
+                #   How much distance can be travelled before touching the obstacle --> move the car as close as possible
+                free_dist = front_collision.distance - self.scale_x + distance_to_travel
+                #self.x += self.forward[0] * free_dist * 0.5 #  5% margin to not get too close of the obstacle
+                #self.z += self.forward[2] * free_dist * 0.5
+
+                #   cancel speed going directly into the obstacle
+                print("dot =", self.forward.dot(front_collision.world_normal))
+                next_forward = self.forward - (self.forward.dot(front_collision.world_normal)) * front_collision.world_normal
+                self.speed = 0 #self.speed + (self.forward.dot(front_collision.world_normal)) * self.speed
+
+                print("self.rotation_y =", self.rotation_y)
+                self.rotation_y = atan2(next_forward[0], next_forward[2]) / 3.14159 * 180
+                print("self.rotation_y =", self.rotation_y)
+                dist_left_to_travel = distance_to_travel - free_dist
+
+                return 0
+
+            else:
+                self.x += self.forward[0] * distance_to_travel
+                self.z += self.forward[2] * distance_to_travel
+
+                return 0
+
+        print("Moving car total_dist_to_move= ", total_dist_to_move)
+        for i in range(2):
+            total_dist_to_move = move_car(total_dist_to_move, 1 if self.speed > 0 else -1)
+
+            if total_dist_to_move <= 0:
+                break
 
         #   Orient car to speed
 
