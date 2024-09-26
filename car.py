@@ -365,9 +365,7 @@ class Car(Entity):
                 next_forward = self.forward - (self.forward.dot(front_collision.world_normal)) * front_collision.world_normal
                 self.speed = 0 #self.speed + (self.forward.dot(front_collision.world_normal)) * self.speed
 
-                print("self.rotation_y =", self.rotation_y)
                 self.rotation_y = atan2(next_forward[0], next_forward[2]) / 3.14159 * 180
-                print("self.rotation_y =", self.rotation_y)
                 dist_left_to_travel = distance_to_travel - free_dist
 
                 return 0
@@ -378,7 +376,6 @@ class Car(Entity):
 
                 return 0
 
-        print("Moving car total_dist_to_move= ", total_dist_to_move)
         for i in range(2):
             total_dist_to_move = move_car(total_dist_to_move, 1 if self.speed > 0 else -1)
 
@@ -406,7 +403,10 @@ class Car(Entity):
         self.position = self.reset_position
         y_ray = raycast(origin = self.reset_position, direction = (0,-1,0), ignore = [self,])
         self.y = y_ray.world_point.y + 1.4
+        print(self.reset_orientation)
         self.rotation_y = self.reset_orientation[1]
+
+        print("reseting at", str(self.position), " --> ", self.rotation_y)
 
         camera.world_rotation_y = self.rotation_y
         self.speed = 0

@@ -7,6 +7,7 @@ from sensing_message import SensingSnapshot, SensingSnapshotManager
 from remote_commands import RemoteCommandParser
 
 REMOTE_CONTROLLER_VERBOSE = False
+PERIOD_REMOTE_SENSING = 0.1
 
 def printv(str):
     if REMOTE_CONTROLLER_VERBOSE:
@@ -30,7 +31,8 @@ class RemoteController(Entity):
         self.reset_speed = (0,0,0)
         self.reset_rotation = 0
 
-        self.sensing_period = 1
+        #   Period for recording --> 0.1 secods = 10 times a second
+        self.sensing_period = PERIOD_REMOTE_SENSING
         self.last_sensing = -1
 
     def update(self):
@@ -46,6 +48,7 @@ class RemoteController(Entity):
             snapshot = SensingSnapshot()
             snapshot.car_position = self.car.world_position
             snapshot.car_speed = self.car.speed
+            snapshot.car_angle = self.car.rotation_y
             snapshot.raycast_distances = self.car.multiray_sensor.collect_sensor_values()
 
             #   Collect last rendered image
@@ -75,7 +78,7 @@ class RemoteController(Entity):
         while len(self.client_commands) > 0:
             try:
                 commands = self.client_commands.parse_next_command()
-
+                print("Processing command", commands)
                 if commands[0] == b'push' or commands[0] == b'release':
                     if commands[1] == b'forward':
                         held_keys['w'] = commands[0] == b'push'
@@ -91,7 +94,7 @@ class RemoteController(Entity):
                     if commands[1] == b'position':
                         self.car.reset_position = commands[2]
                     elif commands[1] == b'rotation':
-                        self.car.reset_rotation = (0, commands[2], 0)
+                        self.car.reset_orientation = (0, commands[2], 0)
                     elif commands[1] == b'speed':
                         # Todo
                         pass
