@@ -1,0 +1,47 @@
+{
+    "track_model": "forest_track.obj",
+    "track_texture": "forest_track.png",
+    "boundaries_model": "forest_track_bounds.obj",
+    "origin_position": [
+        0,
+        -50,
+        0
+    ],
+    "origin_rotation": [
+        0,
+        270,
+        0
+    ],
+    "origin_scale": [
+        12,
+        12,
+        12
+    ],
+    "finish_line_position": [
+	    31,
+	    -48,
+	    72
+    ],
+    "finish_line_rotation": [
+	    0,
+	    0,
+	    0
+    ],
+    "finish_line_scale": [
+	    3,
+	    8,
+	    30
+    ],
+    "details": [
+        {
+            "model": "trees-forest.obj",
+            "texture": "tree-forest.png"
+        },
+        {
+            "model": "thintrees-forest.obj",
+            "texture": "thintree-forest.png"
+        }
+    ], 
+    "obstacles": [
+    ]
+}

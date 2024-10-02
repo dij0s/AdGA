@@ -115,22 +115,26 @@ class RemoteCommandParser:
 
 if __name__ == "__main__":
     acc = RemoteCommandParser()
-    acc.add(b'push forward;')
-    acc.add(b'push left;')
-    acc.add(b'push right;')
-    acc.add(b'push back;')
-    acc.add(b'release forward;')
-    acc.add(b'release left;')
-    acc.add(b'release right;')
-    acc.add(b'release back;')
     acc.add(b'set position 1.34,12,43;')
     acc.add(b'set rotation 234;')
     acc.add(b'set speed 234,54.2,67.2;')
     acc.add(b'reset;')
-    acc.add(b'faketest;')
+    data = (-1.23124,-1235435.45345,5345.24134234)
+
+
+    print("###########")
+    print(float_tuple(bytes(str(data)[1:-1], "ANSI")))
+    print("###########")
+
+    by = b"set position "+ bytes(str(data)[1:-1].replace(" ", ""), "ANSI")+b";"
+    print("==>", by)
+    acc.add(by)
+
 
     try:
         while True:
             print("command =", acc.parse_next_command())
+            if len(acc.command_words) == 0:
+                break
     except Exception as e:
         print(e)

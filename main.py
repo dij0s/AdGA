@@ -8,7 +8,7 @@ from raycast_sensor import *
 
 from sun import SunLight
 
-from track import ForestTrack
+from track import Track
 
 Text.default_font = "./assets/Roboto.ttf"
 Text.default_resolution = 1080 * Text.size
@@ -23,57 +23,24 @@ window.cog_button.disable()
 window.fps_counter.enable()
 window.exit_button.disable()
 
+#   Global models & textures
+#                   car model       particle model    raycast model
+global_models = [ "sports-car.obj", "particles.obj",  "line.obj"]
+#                Car texture             Particle Textures
+global_texs = [ "sports-red.png", "particle_forest_track.png", "red.png"]
+
 # Starting new thread for assets
-
-def load_assets():
-    models_to_load = [
-        # Cars
-        "sports-car.obj"
-        # Tracks
-        "forest_track.obj", "particles.obj",
-        # Track Bounds
-        "forest_track_bounds.obj",
-        # Track Details
-        "trees-forest.obj", "thintrees-forest.obj",
-        # Utils
-        "line.obj"
-    ]
-
-    textures_to_load = [
-        # Car Textures
-        # Sports Car
-        "sports-red.png",
-        # Track Textures
-        "forest_track.png",
-        # Track Detail Textures
-        "tree-forest.png", "thintree-forest.png",
-        # Particle Textures
-        "particle_forest_track.png",
-        #Utils
-        "red.png"
-    ]
-
-    for i, m in enumerate(models_to_load):
-        load_model(m)
-
-    for i, t in enumerate(textures_to_load):
-        load_texture(t)
-
-try:
-    thread.start_new_thread(function = load_assets, args = "")
-except Exception as e:
-    print("error starting thread", e)
-
+track_metadata = "simple_track_metadata.json"
+track = Track(track_metadata)
+track.load_assets(global_models, global_texs)
 
 # Car
 car = Car()
 car.sports_car()
+# Tracks
+car.set_track(track)
 
 remote_controller = RemoteController(car = car)
-
-# Tracks
-forest_track = ForestTrack(car)
-car.forest_track = forest_track
 
 car.multiray_sensor = MultiRaySensor(car, 11, 90)
 car.multiray_sensor.enable()
@@ -90,26 +57,14 @@ Sky(texture = "sky")
 car.visible = True
 mouse.locked = True
 
-car.position = (12, -35, 76)
-car.rotation = (0, 90, 0)
-car.reset_count_timer.enable()
-
 car.enable()
 
 car.camera_angle = "top"
 car.change_camera = True
 car.camera_follow = True
 
-forest_track.enable()
-forest_track.played = True
-
-for f in forest_track.track:
-    f.enable()
-    f.alpha = 255
-if car.graphics != "ultra fast":
-    for detail in forest_track.details:
-        detail.enable()
-        detail.alpha = 255
+track.activate()
+track.played = True
 
 
 app.run()
