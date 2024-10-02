@@ -111,6 +111,7 @@ class NetworkDataCmdInterface:
             pass
 
     def process_sensing_message(self, sensing_snapshot):
+        #   Sample function to use as a callback
         print("sensing_snapshot.car.position =", sensing_snapshot.car_position)
 
         imageio.imsave("last_image.png", sensing_snapshot.image)

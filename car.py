@@ -355,18 +355,19 @@ class Car(Entity):
 
             #   Detect collision
             if front_collision.distance < self.scale_x + distance_to_travel:
-                #   How much distance can be travelled before touching the obstacle --> move the car as close as possible
                 free_dist = front_collision.distance - self.scale_x + distance_to_travel
-                #self.x += self.forward[0] * free_dist * 0.5 #  5% margin to not get too close of the obstacle
-                #self.z += self.forward[2] * free_dist * 0.5
 
                 #   cancel speed going directly into the obstacle
-                print("dot =", self.forward.dot(front_collision.world_normal))
                 next_forward = self.forward - (self.forward.dot(front_collision.world_normal)) * front_collision.world_normal
-                self.speed = 0 #self.speed + (self.forward.dot(front_collision.world_normal)) * self.speed
+                self.speed = self.speed * (0.5 + 0.5 * (self.forward.dot(front_collision.world_normal))) # Loose half speed on collision and some depending on the angle
 
                 self.rotation_y = atan2(next_forward[0], next_forward[2]) / 3.14159 * 180
                 dist_left_to_travel = distance_to_travel - free_dist
+
+                #   Move car away from obstacle to prevent overlap due to *¦@+!? physics system
+                OBSTACLE_DISPLACEMENT_MARGIN = 1
+                self.x += (front_collision.world_normal * OBSTACLE_DISPLACEMENT_MARGIN).x
+                self.z += (front_collision.world_normal * OBSTACLE_DISPLACEMENT_MARGIN).z
 
                 return 0
 
@@ -381,13 +382,6 @@ class Car(Entity):
 
             if total_dist_to_move <= 0:
                 break
-
-        #   Orient car to speed
-
-
-        #self.compute_steering()
-        #self.cap_kinetic_parameters()
-        #self.check_respawn()
 
         self.c_pivot.position = self.position
         self.c_pivot.rotation_y = self.rotation_y

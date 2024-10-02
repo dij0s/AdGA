@@ -55,6 +55,9 @@ Launching main.py starts a race with a single car on the provided track.
 This track can be controlled either by keyboard (*AWSD*) or by a socket interface. 
 An example of such interface is included in the code in *example_data_collector.py*.
 
+# Sensing
+The car sensing is available in two commodities: **raycasts** and **images**. These sensing snapshots are sent at 10 Hertz (i.e. 10 times a second). Due to this fact, correct recetion of snapshot messages has to be done regularly (See Server buffer saturation section).
+
 # Communication protocol
 
 A remote controller can be impemented using TCP socket connecting on localhost on port 7654. 
@@ -94,6 +97,10 @@ to reset the car at the provided location.
 set ray visible|hidden;
 ```
 To toggle the ray sensor visibility. In direct play **v** can be used to toggle ray visibility
+
+##  /!\ Server buffer saturation
+While implementing your own controller, make sure to regularly empty the socket buffer connected to the server by regularly calling **NetworkDataCmdInterface.recv_msgs**. 
+Otherwise, while sending images, the server might fill the buffer and throw socket errors leading to a crash. 
 
 # Multiplayer
 
