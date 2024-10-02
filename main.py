@@ -42,7 +42,7 @@ car.set_track(track)
 
 remote_controller = RemoteController(car = car)
 
-car.multiray_sensor = MultiRaySensor(car, 11, 90)
+car.multiray_sensor = MultiRaySensor(car, 15, 90)
 car.multiray_sensor.enable()
 
 # Lighting + shadows
