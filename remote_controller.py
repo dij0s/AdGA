@@ -26,7 +26,6 @@ class RemoteController(Entity):
 
         self.client_commands = RemoteCommandParser()
 
-        self.controls = {"forward":False, "right":False, "left":False, "back":False}
         self.reset_location = (0,0,0)
         self.reset_speed = (0,0,0)
         self.reset_rotation = 0
@@ -46,6 +45,7 @@ class RemoteController(Entity):
 
         if time.time() - self.last_sensing >= self.sensing_period:
             snapshot = SensingSnapshot()
+            snapshot.current_controls = (held_keys['w'], held_keys['s'], held_keys['a'], held_keys['d'])
             snapshot.car_position = self.car.world_position
             snapshot.car_speed = self.car.speed
             snapshot.car_angle = self.car.rotation_y

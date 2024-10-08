@@ -12,6 +12,8 @@ def iter_unpack(format, data):
 """
 class SensingSnapshot:
     def __init__(self):
+        #   Forward - Backward - Left - Right
+        self.current_controls = (0,0,0,0)
         self.car_position = (0,0,0)
         self.car_speed = 0
         self.car_angle = 0
@@ -20,6 +22,7 @@ class SensingSnapshot:
 
     def pack(self):
         byte_data = b''
+        byte_data += struct.pack(">BBBB", *self.current_controls)
         byte_data += struct.pack(">fffff", self.car_position[0], self.car_position[1], self.car_position[2], self.car_angle, self.car_speed)
 
         nbr_raycasts = len(self.raycast_distances)
@@ -34,6 +37,7 @@ class SensingSnapshot:
         return byte_data
 
     def unpack(self, data):
+        self.current_controls, data = iter_unpack(">BBBB", data)
         (x,y,z,a,s), data = iter_unpack(">fffff", data)
         self.car_position = (x,y,z)
         self.car_angle = a
