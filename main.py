@@ -5,13 +5,9 @@ from car import Car
 from remote_controller import RemoteController
 from raycast_sensor import *
 
-
 from sun import SunLight
 
 from track import Track
-
-Text.default_font = "./assets/Roboto.ttf"
-Text.default_resolution = 1080 * Text.size
 
 # Window
 window.vsync = True # Set to false to uncap FPS limit of 60
