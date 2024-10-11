@@ -51,6 +51,7 @@ class DataCollectionUI(QtWidgets.QMainWindow):
             if not self.saveImgCheckBox.isChecked():
                 msg.image = None
 
+            print(msg.current_controls)
             self.recorded_data.append(msg)
             self.nbrSnapshotSaved.setText(str(len(self.recorded_data)))
 
