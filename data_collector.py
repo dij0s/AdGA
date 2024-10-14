@@ -10,7 +10,7 @@ import pickle
 import lzma
 
 class DataCollectionUI(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self, message_processing_callback = None):
         super().__init__()
 
         uic.loadUi("DataCollector.ui", self)
@@ -33,6 +33,14 @@ class DataCollectionUI(QtWidgets.QMainWindow):
         self.recordDataButton.clicked.connect(self.toggleRecord)
         self.resetButton.clicked.connect(self.resetNForget)
 
+        self.autopiloting = False
+        def toggle_autopilot():
+            self.autopiloting = not self.autopiloting
+            self.AutopilotButton.setText("AutoPilot:\n" + ("ON" if self.autopiloting else "OFF"))
+
+        self.AutopilotButton.clicked.connect(toggle_autopilot)
+        self.message_processing_callback = message_processing_callback
+
         self.saveRecordButton.clicked.connect(self.saveRecord)
 
         self.network_interface = NetworkDataCmdInterface(self.collectMsg)
@@ -51,9 +59,12 @@ class DataCollectionUI(QtWidgets.QMainWindow):
             if not self.saveImgCheckBox.isChecked():
                 msg.image = None
 
-            print(msg.current_controls)
             self.recorded_data.append(msg)
             self.nbrSnapshotSaved.setText(str(len(self.recorded_data)))
+
+        if self.autopiloting:
+            if self.message_processing_callback is not None:
+                self.message_processing_callback(msg, self)
 
     def resetNForget(self):
 
@@ -74,7 +85,7 @@ class DataCollectionUI(QtWidgets.QMainWindow):
     def toggleRecord(self):
         self.recording = not self.recording
         self.recordDataButton.setText("Recording..." if self.recording else "Record")
-    def onCarControlled(self,direction, start):
+    def onCarControlled(self, direction, start):
         command_types = ["release", "push"]
         self.network_interface.send_cmd(command_types[start] + " " + direction+";")
 
