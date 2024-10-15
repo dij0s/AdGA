@@ -4,36 +4,6 @@
 
 This repository holds a sandbox driving simulation controllable via a network interface as a machine learning and data collection challenge.  
 
-
-# ToDo & Done
-
-* Streamline single track loading
-  * **ToDo -** automated loading meshes (track, bounds, decorations)
-  * **ToDo -** car start positioning
-* Target track modeling
-  * **ToDo -** road mesh
-  * **ToDo -** decorations
-* Sensing
-  * **Done -** raycasting aligned with speed vector (not with car)
-  * **ToDo -** define recasting parameters 
-    * number of rays
-    * field of scanning
-* Car physic
-  * **ToDo -** Make over for less soapy control
-* Interface
-  * **Done -** Socket & communication protocol
-  * **Done -** in-control streaming
-    * **ToDo -** Polish communication protocol
-      * **ToDo -** speed reset
-    * **ToDo -** Decide to add time dilation ? (Running simulation faster) or let student figure it ?
-  * **Done -** out sensing streaming
-    * **Done -** sensing parameters (frequency, resolution, etc)
-    * **Done -** position/orientation/velocity
-    * **Done -** raycasting
-    * **Done -** image
-* Dockerization
-  * **ToDo -** test dockerization 
-
 # Installation
 
 ```
