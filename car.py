@@ -286,6 +286,8 @@ class Car(Entity):
         if held_keys["escape"]:
             quit()
 
+        self.check_respawn()
+
         #   Process inputs & update speed
         if held_keys[self.controls[0]] or held_keys["up arrow"]:
             self.speed += self.acceleration * time.dt
@@ -395,8 +397,8 @@ class Car(Entity):
         """
         #   Project car directly on ground when resetting
         self.position = self.reset_position
-        y_ray = raycast(origin = self.reset_position, direction = (0,-1,0), ignore = [self,])
-        self.y = y_ray.world_point.y + 1.4
+        #y_ray = raycast(origin = self.reset_position, direction = (0,-1,0), ignore = [self,])
+        #self.y = y_ray.world_point.y + 1.4
         print(self.reset_orientation)
         self.rotation_y = self.reset_orientation[1]
 
