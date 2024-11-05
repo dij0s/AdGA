@@ -26,8 +26,9 @@ RUN apt-get update -y \
 # Rally part.
 WORKDIR /app
 RUN apt-get update && apt-get install -y git && apt-get clean
-RUN git clone https://gitlab.hevs.ch/louis.lettry/rallyrobopilot.git .
-RUN git checkout cedric
+# RUN git clone https://gitlab.hevs.ch/louis.lettry/rallyrobopilot.git .
+# RUN git checkout cedric
+COPY . .
 
 RUN set -xe \
     && apt-get update \

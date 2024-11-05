@@ -1,13 +1,10 @@
 from ursina import *
 from direct.stdpy import thread
 
-from car import Car
-from remote_controller import RemoteController
-from raycast_sensor import *
+from flask import Flask, request, jsonify
+from threading import Thread
 
-from sun import SunLight
-
-from track import Track
+from rallyrobopilot import Car, RemoteController, Track, SunLight, MultiRaySensor
 
 # Window
 window.vsync = True # Set to false to uncap FPS limit of 60
@@ -36,7 +33,14 @@ car.sports_car()
 # Tracks
 car.set_track(track)
 
-remote_controller = RemoteController(car = car)
+# Setup Flask
+flask_app = Flask(__name__)
+flask_thread = Thread(target=flask_app.run, kwargs={'host': "0.0.0.0", 'port': 5000})
+print("Flask server running on port 5000")
+flask_thread.start()
+        
+
+remote_controller = RemoteController(car = car, connection_port=7654, flask_app=flask_app)
 
 car.multiray_sensor = MultiRaySensor(car, 15, 90)
 car.multiray_sensor.enable()
@@ -51,7 +55,9 @@ render.setShaderAuto()
 Sky(texture = "sky")
 
 car.visible = True
-mouse.locked = True
+
+mouse.locked = False
+mouse.visible = True
 
 car.enable()
 

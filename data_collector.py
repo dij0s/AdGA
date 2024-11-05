@@ -1,6 +1,6 @@
 import os.path
 
-from sensing_message import *
+from rallyrobopilot import *
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6 import QtCore, QtWidgets, QtGui
