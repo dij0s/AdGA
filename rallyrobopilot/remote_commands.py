@@ -65,7 +65,7 @@ class RemoteControlCommand:
 
 remote_control_commands = [
     #   Car control
-    RemoteControlCommand(contains(b'push', b'release'), contains(b'forward', b'left', b'right', b'back')),
+    RemoteControlCommand(contains(b'push', b'release'), contains(b'forward', b'left', b'right', b'back', b'all')),
     #   Reset
     RemoteControlCommand(equals(b'reset')),
     #   Reset parameters command
@@ -80,6 +80,7 @@ class RemoteCommandParser:
         self.command_words = []
 
     def add(self, data):
+        print(data)
         self.pending_data += data
         next_semicol = self.pending_data.find(b';')
         while next_semicol > 0:

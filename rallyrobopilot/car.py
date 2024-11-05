@@ -3,9 +3,8 @@ import timeit
 import setuptools
 from ursina import *
 from ursina import curve
-from particles import Particles, TrailRenderer
+from .particles import Particles, TrailRenderer
 from math import pow, atan2
-from raycast_sensor import MultiRaySensor
 import json
 
 sign = lambda x: -1 if x < 0 else (1 if x > 0 else 0)

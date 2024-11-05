@@ -93,13 +93,15 @@ class NetworkDataCmdInterface:
         self.data = []
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.IPPROTO_TCP, socket.SO_RCVBUF, 125536)
         self.socket.connect((address, port))
-        self.socket.setblocking(False)
+        # self.socket.setblocking(False)
+        self.socket.settimeout(0.05)
 
         self.msg_mngr = SensingSnapshotManager(callback)
 
     def send_cmd(self, cmd):
-        self.socket.send(bytes(cmd, "ANSI"))
+        self.socket.send(bytes(cmd, "utf-8"))
 
     def recv_msg(self):
         try:
