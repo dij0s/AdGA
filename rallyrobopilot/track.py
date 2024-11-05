@@ -15,7 +15,7 @@ class Track(Entity):
 
         origin_position = tuple(self.data["origin_position"])
         origin_rotation = tuple(self.data["origin_rotation"])
-        origin_scale = tuple(self.data["origin_scale"])
+        self.origin_scale = tuple(self.data["origin_scale"])
 
         self.car_default_reset_position = tuple(self.data["car_default_reset_position"])
         self.car_default_reset_orientation = tuple(self.data["car_default_reset_orientation"])
@@ -26,7 +26,7 @@ class Track(Entity):
         
         super().__init__(model = track_model, texture = track_texture,
                          position = origin_position, rotation = origin_rotation, 
-                         scale = origin_scale, collider = "mesh")
+                         scale = self.origin_scale, collider = "mesh")
 
         self.finish_line = Entity(model = "cube", position = finish_line_position,
                                   rotation = finish_line_rotation, scale = finish_line_scale, visible = False)
@@ -36,13 +36,13 @@ class Track(Entity):
         for detail in self.data["details"]:
             self.details.append(Entity(model = detail["model"], texture = detail["texture"],
                             position = origin_position, rotation_y = origin_rotation[1], 
-                            scale = origin_scale[1]))
+                            scale = self.origin_scale[1]))
         self.obstacles = []
         for obstacle in self.data["obstacles"]:
             self.obstacles.append(Entity(model = obstacle["model"],
                             collider = "mesh",
                             position = origin_position, rotation_y = origin_rotation[1], 
-                            scale = origin_scale[1], visible = False))
+                            scale = self.origin_scale[1], visible = False))
 
         self.disable()
         
@@ -73,8 +73,14 @@ class Track(Entity):
 
     def load_assets(self, global_models = [], global_texs = []):
         def inner_load_assets():
-            models_to_load = list(set(global_models + [detail["model"] for detail in self.data["details"]] + [obs["model"] for obs in self.data["obstacles"]]))
-            textures_to_load = list(set(global_texs + [detail["texture"] for detail in self.data["details"]] + [obs["texture"] for obs in self.data["obstacles"]]))
+            models_to_load = list(set(global_models +
+                                      [detail["model"] for detail in self.data["details"]] +
+                                      [obs["model"] for obs in self.data["obstacles"]]))
+
+            textures_to_load = list(set(global_texs +
+                                        [detail["texture"] for detail in self.data["details"]] +
+                                        [obs["texture"] for obs in self.data["obstacles"]] +
+                                        [elem for elem in self.data["textures"]] if "textures" in self.data else []))
 
             for i, m in enumerate(models_to_load):
                 load_model(m)
