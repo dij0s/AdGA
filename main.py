@@ -23,7 +23,7 @@ global_models = [ "sports-car.obj", "particles.obj",  "line.obj"]
 global_texs = [ "sports-red.png", "sports-blue.png", "sports-green.png", "sports-orange.png", "sports-white.png", "particle_forest_track.png", "red.png"]
 
 # Starting new thread for assets
-track_metadata = "assets/VisualTrack/track_metadata.json"
+track_metadata = "rallyrobopilot/assets/VisualTrack/track_metadata.json"
 track = Track(track_metadata)
 track.load_assets(global_models, global_texs)
 
