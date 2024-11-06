@@ -1,6 +1,11 @@
 from simulator import Simulator
 
-car1 = Simulator([("forward", 1), ("left", 1)] * 10)
-car1.run()
+import sys
+from PyQt6 import QtWidgets
 
-print(car1.get_recorded_data())
+app = QtWidgets.QApplication(sys.argv)
+
+simulation = Simulator([("forward", 1), ("left", 1)] * 10, (0, 0, 4))
+simulation.start()
+
+sys.exit(app.exec())

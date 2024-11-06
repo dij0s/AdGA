@@ -1,7 +1,8 @@
 from PyQt6.QtCore import QTimer
 from PyQt6 import QtWidgets
 
-import sys
+from flask import Flask
+from threading import Thread
 
 from collections import deque
 from rallyrobopilot import *
@@ -12,24 +13,57 @@ class Simulator(QtWidgets.QMainWindow):
     on a car instance through
     the network
     """
-    def __init__(self, controls):
-        self._controls = deque(controls);
+    def __init__(self, controls, init_position):
+        super().__init__()
+
+        self._controls = deque(controls)
+        self._init_position = init_position
         self._recorded_data = []
 
-    def run(self):
-        app = QtWidgets.QApplication(sys.argv)
+        # setup backend
+        self._setup_server();
 
+    def start(self):
+        
+        # wait for backend setup
+        self.initial_timer = QTimer()
+        self.initial_timer.setSingleShot(True)
+        self.initial_timer.timeout.connect(self._start_network_interface)
+        self.initial_timer.start(10000)
+        
+        # TODO: RETURN DATA AT THE END
+
+    def get_recorded_data(self):
+        return self._recorded_data
+
+    def _start_network_interface(self):
         # create network interface
         self.network_interface = NetworkDataCmdInterface(self._collect_data)
+
         # connect to socket
         self.timer = QTimer()
         self.timer.timeout.connect(self.network_interface.recv_msg)
         self.timer.start(25)
-        # TODO: RETURN DATA AT THE END
-        app.exec()
 
-    def get_recorded_data(self):
-        return self._recorded_data
+    def _setup_server(self):
+        # setup track and car
+        # global_models = [ "sports-car.obj", "particles.obj",  "line.obj"]
+        # global_texs = [ "sports-red.png", "sports-blue.png", "sports-green.png", "sports-orange.png", "sports-white.png", "particle_forest_track.png", "red.png"]
+
+        track = Track("rallyrobopilot/assets/SimpleTrack/track_metadata.json")
+        # track.load_assets(global_models, global_texs)
+
+        car = Car(position = self._init_position)
+        car.sports_car()
+        car.set_track(track)
+
+        RemoteController(car = car, connection_port=7654)
+        
+        car.visible = True
+        car.enable()
+
+        track.activate()
+        track.played = True
 
     def _collect_data(self, message):
         self._recorded_data.append(message)
