@@ -25,7 +25,7 @@ class Simulator(QtWidgets.QMainWindow):
         self.timer = QTimer()
         self.timer.timeout.connect(self.network_interface.recv_msg)
         self.timer.start(25)
-
+        # TODO: RETURN DATA AT THE END
         app.exec()
 
     def get_recorded_data(self):
@@ -35,8 +35,10 @@ class Simulator(QtWidgets.QMainWindow):
         self._recorded_data.append(message)
         
         current_control = self._controls.popleft()
-        # HANDLE IF THERE IS NONE LEFT
-        for command, start in current_control:
+        print(current_control)
+        # TODO: HANDLE IF THERE IS NONE LEFT
+        for index, (command, start) in enumerate(current_control):
+            print(index, command)
             self._send_command(command, start)
 
     def _send_command(self, direction, start):
