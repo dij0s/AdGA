@@ -137,7 +137,7 @@ class Car(Entity):
         self.track = track
         self.reset_position = track.car_default_reset_position
         self.reset_orientation = track.car_default_reset_orientation
-        self.position = self.reset_position
+        # self.position = self.reset_position
         self.rotation_y = self.reset_orientation[1]
 
     def sports_car(self):

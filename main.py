@@ -29,7 +29,7 @@ track = Track(track_metadata)
 track.load_assets(global_models, global_texs)
 
 # Car
-car = Car()
+car = Car(position=(100, 0, 20))
 car.sports_car()
 # Tracks
 car.set_track(track)
