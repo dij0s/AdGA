@@ -5,10 +5,11 @@ from flask import Flask, request, jsonify
 from threading import Thread
 
 from rallyrobopilot import Car, RemoteController, Track, SunLight, MultiRaySensor
+import sys
 
 # Window
 window.vsync = True # Set to false to uncap FPS limit of 60
-app = Ursina(size=(1280,1024))
+app = Ursina(size=(320,256))
 window.title = "Rally"
 window.borderless = False
 window.show_ursina_splash = False
@@ -23,7 +24,7 @@ global_models = [ "sports-car.obj", "particles.obj",  "line.obj"]
 global_texs = [ "sports-red.png", "sports-blue.png", "sports-green.png", "sports-orange.png", "sports-white.png", "particle_forest_track.png", "red.png"]
 
 # Starting new thread for assets
-track_metadata = "rallyrobopilot/assets/VisualTrack/track_metadata.json"
+track_metadata = "rallyrobopilot/assets/SimpleTrack/track_metadata.json"
 track = Track(track_metadata)
 track.load_assets(global_models, global_texs)
 
@@ -68,5 +69,8 @@ car.camera_follow = True
 track.activate()
 track.played = True
 
+def input(key):
+    if key == 'escape':
+        sys.exit()
 
 app.run()

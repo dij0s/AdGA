@@ -121,15 +121,13 @@ class DataCollectionUI(QtWidgets.QMainWindow):
         self.saveRecordButton.setText("Saving ...")
 
         import os
-
+        from datetime import datetime
+        
         record_folder = "records"
         os.makedirs(record_folder, exist_ok=True)
 
-        record_name = os.path.join(record_folder, "record_%d.npz")
-        fid = 0
-
-        while os.path.exists(record_name % fid):
-            fid += 1
+        timestamp = datetime.now().strftime('%y%m%d%H%M%S')
+        record_name = os.path.join(record_folder, f"record_{timestamp}.npz")
 
         class ThreadedSaver(QtCore.QThread):
             def __init__(self, path, data):
@@ -141,7 +139,7 @@ class DataCollectionUI(QtWidgets.QMainWindow):
                 with lzma.open(self.path, "wb") as f:
                     pickle.dump(self.data, f)
 
-        self.saving_worker = ThreadedSaver(record_name % fid, self.recorded_data)
+        self.saving_worker = ThreadedSaver(record_name, self.recorded_data)
         self.recorded_data = []
         self.nbrSnapshotSaved.setText("0")
         self.saving_worker.finished.connect(self.onRecordSaveDone)
