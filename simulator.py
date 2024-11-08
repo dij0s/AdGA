@@ -15,16 +15,17 @@ class Simulator(QtWidgets.QMainWindow):
     on a car instance through
     the network
     """
-    def __init__(self, controls, init_position):
+    def __init__(self, controls, init_position, init_speed):
         # TODO: Add init_speed
         super().__init__()
 
         self._controls = deque(controls)
         self._init_position = init_position
+        self._init_speed = init_speed
         self._recorded_data = []
 
         # setup backend
-        self._setup_server();
+        self._setup_server()
 
     def start(self):
         print("[LOG] Waiting for backend setup..")
@@ -33,13 +34,13 @@ class Simulator(QtWidgets.QMainWindow):
         self.initial_timer = QTimer()
         self.initial_timer.setSingleShot(True)
         self.initial_timer.timeout.connect(self._start_network_interface)
-        self.initial_timer.start(10000)
+        self.initial_timer.start(3000)
         
         # TODO: RETURN DATA AT THE END
 
     def get_recorded_data(self):
         return self._recorded_data
-
+    
     def _start_network_interface(self):
         print("[LOG] Starting network interface")
 
@@ -50,18 +51,16 @@ class Simulator(QtWidgets.QMainWindow):
 
         # connect to socket
         self.timer = QTimer()
-        self.timer.timeout.connect(self.network_interface.recv_msg)
-        self.timer.start(25)
+        self.timer.timeout.connect(self.network_interface.send_msg)
+        self.timer.start(100)
+
+        print("[LOG] Configured network interface")
 
     def _setup_server(self):
         # setup track and car
-        global_models = [ "sports-car.obj", "particles.obj",  "line.obj"]
-        global_texs = [ "sports-red.png", "sports-blue.png", "sports-green.png", "sports-orange.png", "sports-white.png", "particle_forest_track.png", "red.png"]
-
         track = Track("rallyrobopilot/assets/SimpleTrack/track_metadata.json")
-        track.load_assets(global_models, global_texs)
 
-        car = Car(position = self._init_position)
+        car = Car(position=self._init_position, speed=self._init_speed)
         car.sports_car()
         car.set_track(track)
 
@@ -79,14 +78,15 @@ class Simulator(QtWidgets.QMainWindow):
         print("[LOG] Backend entities are all setup")
 
     def _collect_data(self, message):
+        print("[LOG] Network interface callback has been called..")
         self._recorded_data.append(message)
         
-        current_control = self._controls.popleft()
-        print(current_control)
-        # TODO: HANDLE IF THERE IS NONE LEFT
-        for index, (command, start) in enumerate(current_control):
-            print(index, command)
-            self._send_command(command, start)
+        if self._controls:
+            current_control = self._controls.popleft()
+            for command, start in current_control:
+                self._send_command(command, start)
+        else:
+            print("[LOG] No controls left")
 
     def _send_command(self, direction, start):
         command_types = ["release", "push"]
