@@ -100,8 +100,11 @@ class NetworkDataCmdInterface:
         self.msg_mngr = SensingSnapshotManager(callback)
 
     def send_msg(self):
-        data = self.socket.recv(2**20)
-        self.msg_mngr.add_message_chunk(data)
+        try:
+            data = self.socket.recv(2**20)
+            self.msg_mngr.add_message_chunk(data)
+        except:
+            pass
 
     def send_cmd(self, cmd):
         self.socket.send(bytes(cmd, "utf-8"))
@@ -109,3 +112,7 @@ class NetworkDataCmdInterface:
     def send_command(self, direction, start):
         command_types = ["release", "push"]
         self.network_interface.send_cmd(command_types[start] + " " + direction+";")
+
+    def close(self):
+        self.socket.close()
+        del self.socket

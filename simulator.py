@@ -1,13 +1,10 @@
 from PyQt6.QtCore import QTimer
 from PyQt6 import QtWidgets
 
-import sys
-
-from flask import Flask
-from threading import Thread
+from rallyrobopilot import *
 
 from collections import deque
-from rallyrobopilot import *
+from math import sqrt
 
 class Simulator(QtWidgets.QMainWindow):
     """
@@ -34,7 +31,7 @@ class Simulator(QtWidgets.QMainWindow):
         self.initial_timer = QTimer()
         self.initial_timer.setSingleShot(True)
         self.initial_timer.timeout.connect(self._start_network_interface)
-        self.initial_timer.start(3000)
+        self.initial_timer.start(5000)
         
         # TODO: RETURN DATA AT THE END
 
@@ -78,7 +75,6 @@ class Simulator(QtWidgets.QMainWindow):
         print("[LOG] Backend entities are all setup")
 
     def _collect_data(self, message):
-        print("[LOG] Network interface callback has been called..")
         self._recorded_data.append(message)
         
         if self._controls:
@@ -87,8 +83,33 @@ class Simulator(QtWidgets.QMainWindow):
                 self._send_command(command, start)
         else:
             print("[LOG] No controls left")
+            self._recorded_data = [sensor.car_position for sensor in self._recorded_data[1:]]
+            print(f"[LOG] Received a total of {len(self._recorded_data)} sensor messages")
+
             self.timer.stop()
+            self.network_interface.close()
+
+            print(self._compute_fitness())
+
+            # close application ?
 
     def _send_command(self, direction, start):
         command_types = ["release", "push"]
         self.network_interface.send_cmd(command_types[start] + " " + direction+";")
+
+    def _compute_fitness(self):
+        # compute fitness of current trajectory
+        # fitness is, per definition, the distance
+        # travelled by the car
+        total_vector_magnitude = 0.0
+        for p1, p2 in zip(self._recorded_data[:-1], self._recorded_data[1:]):
+            x1, z1, y1 = p1
+            x2, z2, y2 = p2
+
+            dx = x2 - x1
+            dz = z2 - z1
+            dy = y2 - y1
+            
+            total_vector_magnitude += sqrt(dx**2 + dy**2 + dz**2)
+
+        return total_vector_magnitude
