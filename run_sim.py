@@ -1,11 +1,17 @@
-from simulator import Simulator
-
-import sys
+from ursina import *
 from PyQt6 import QtWidgets
 
-app = QtWidgets.QApplication(sys.argv)
+import sys
+
+from simulator import Simulator
+
+ursina_app = Ursina(size=(320,256))
+autopilot_app = QtWidgets.QApplication(sys.argv)
 
 simulation = Simulator([("forward", 1), ("left", 1)] * 10, (0, 0, 4))
 simulation.start()
 
-sys.exit(app.exec())
+ursina_app.run()
+autopilot_app.run()
+
+sys.exit(autopilot_app.exec())

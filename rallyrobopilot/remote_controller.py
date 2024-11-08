@@ -199,7 +199,9 @@ class RemoteController(Entity):
         #   No controller connected
         else:
             if self.listen_socket is None:
+                print("[SOCKET] Remote Controller opening socket..")
                 self.open_connection_socket()
+                print("[SOCKET] Remote Controller listening socket is now setup")
             try:
                 inc_client, address = self.listen_socket.accept()
                 print("Controller connecting from " + str(address))
