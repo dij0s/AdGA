@@ -87,6 +87,7 @@ class Simulator(QtWidgets.QMainWindow):
                 self._send_command(command, start)
         else:
             print("[LOG] No controls left")
+            self.timer.stop()
 
     def _send_command(self, direction, start):
         command_types = ["release", "push"]
