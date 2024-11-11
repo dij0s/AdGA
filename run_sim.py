@@ -9,6 +9,9 @@ ursina_app = Ursina(size=(320,256))
 
 autopilot_app = QtWidgets.QApplication(sys.argv)
 
+# arguments shall be passed as
+# <controls>, <init_position - (x,y,z)>, <init_speed>
+
 fake_controls = [[("forward", 1), ("left", 1)], [("forward", 1), ("right", 1)], [("forward", 1)], [("forward", 1)], [("forward", 1)], [("forward", 1)], [("forward", 1)], [("forward", 1)], [("forward", 1)], [("forward", 1)]]
 
 simulation = Simulator(fake_controls, (0, 0, 4), 10)
