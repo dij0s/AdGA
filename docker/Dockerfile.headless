@@ -1,4 +1,5 @@
 FROM debian:stable-slim
+
 RUN apt-get -y update
 RUN apt install libgl1-mesa-glx -y
 RUN apt-get install 'ffmpeg'\
@@ -7,17 +8,20 @@ RUN apt-get install 'ffmpeg'\
 
 # Headless part
 RUN apt-get update -y \
-  && apt-get install --no-install-recommends -y xvfb libgl1-mesa-dri mesa-utils
+  && apt-get install --no-install-recommends -y xvfb libgl1-mesa-dri
   
 WORKDIR /usr/bin
 COPY xvfb-startup.sh .
+RUN chmod +x xvfb-startup.sh
 
 RUN sed -i 's/\r$//' xvfb-startup.sh
 ARG RESOLUTION="1920x1080x24"
 ENV XVFB_RES="${RESOLUTION}"
 ARG XARGS=""
 ENV XVFB_ARGS="${XARGS}"
-CMD ["/bin/bash", "xvfb-startup.sh"]
+
+RUN apt-get update -y \
+  && apt-get install --no-install-recommends -y mesa-utils
 
 # Rally simulation part
 WORKDIR /app
@@ -39,4 +43,6 @@ RUN pip install python3_xlib
 
 # Setup as entrypoint to allow
 # for inline argument passing
-ENTRYPOINT ["python", "run_sim.py"]
+# ENTRYPOINT ["python", "run_sim.py"]
+# ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/usr/bin/xvfb-startup.sh", "python", "run_sim.py"]
