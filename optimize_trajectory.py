@@ -52,7 +52,7 @@ class GAManager():
         Evolve the population for a given number of iterations
         """
 
-        for i in range(iterations):
+        for _ in range(iterations):
             # Simluate the population to get the positions
             simulation_results = [
                 self._simulate([x for x, _ in individual])

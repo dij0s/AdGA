@@ -13,7 +13,6 @@ class Simulator(QtWidgets.QMainWindow):
     the network
     """
     def __init__(self, controls, init_position, init_speed):
-        # TODO: Add init_speed
         super().__init__()
 
         self._controls = deque(controls)
@@ -33,10 +32,6 @@ class Simulator(QtWidgets.QMainWindow):
         self.initial_timer.timeout.connect(self._start_network_interface)
         self.initial_timer.start(5000)
         
-        # TODO: RETURN DATA AT THE END
-
-    def get_recorded_data(self):
-        return self._recorded_data
     
     def _start_network_interface(self):
         print("[LOG] Starting network interface")
@@ -60,9 +55,6 @@ class Simulator(QtWidgets.QMainWindow):
         car = Car(position=self._init_position, speed=self._init_speed)
         car.sports_car()
         car.set_track(track)
-
-        car.multiray_sensor = MultiRaySensor(car, 15, 90)
-        car.multiray_sensor.enable()
 
         RemoteController(car=car, connection_port=7654)
         

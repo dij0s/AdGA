@@ -3,7 +3,6 @@ import timeit
 import setuptools
 from ursina import *
 from ursina import curve
-from .particles import Particles, TrailRenderer
 from math import pow, atan2
 import json
 
@@ -67,12 +66,6 @@ class Car(Entity):
         # TrailRenderer
         self.trail_pivot = Entity(parent = self, position = (0, -1, 2))
 
-        self.trail_renderer1 = TrailRenderer(parent = self.particle_pivot, position = (0.8, -0.2, 0), color = color.black, alpha = 0, thickness = 7, length = 200)
-        self.trail_renderer2 = TrailRenderer(parent = self.particle_pivot, position = (-0.8, -0.2, 0), color = color.black, alpha = 0, thickness = 7, length = 200)
-        self.trail_renderer3 = TrailRenderer(parent = self.trail_pivot, position = (0.8, -0.2, 0), color = color.black, alpha = 0, thickness = 7, length = 200)
-        self.trail_renderer4 = TrailRenderer(parent = self.trail_pivot, position = (-0.8, -0.2, 0), color = color.black, alpha = 0, thickness = 7, length = 200)
-        
-        self.trails = [self.trail_renderer1, self.trail_renderer2, self.trail_renderer3, self.trail_renderer4]
         self.start_trail = True
 
         # Collision
@@ -187,8 +180,6 @@ class Car(Entity):
         self.particle_time += time.dt
         if self.particle_time >= self.particle_amount:
             self.particle_time = 0
-            self.particles = Particles(self, self.particle_pivot.world_position - (0, 1, 0))
-            self.particles.destroy(1)
 
     def hand_brake(self):
         # Hand Braking
