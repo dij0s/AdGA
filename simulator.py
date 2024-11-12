@@ -1,5 +1,6 @@
 from PyQt6.QtCore import QTimer
 from PyQt6 import QtWidgets
+from ursina import Ursina, application
 
 from rallyrobopilot import *
 
@@ -12,14 +13,17 @@ class Simulator(QtWidgets.QMainWindow):
     on a car instance through
     the network
     """
-    def __init__(self, controls, init_position, init_speed):
+    def __init__(self, controls, init_position, init_speed, simulation_queue):
         # TODO: Add init_speed
         super().__init__()
 
         self._controls = deque(controls)
         self._init_position = init_position
         self._init_speed = init_speed
+        self.simulation_queue = simulation_queue
         self._recorded_data = []
+        self.done = False
+        self.results = None
 
         # setup backend
         self._setup_server()
@@ -32,11 +36,13 @@ class Simulator(QtWidgets.QMainWindow):
         self.initial_timer.setSingleShot(True)
         self.initial_timer.timeout.connect(self._start_network_interface)
         self.initial_timer.start(5000)
-        
         # TODO: RETURN DATA AT THE END
 
     def get_recorded_data(self):
         return self._recorded_data
+
+    def get_fitness(self):
+        return self._compute_fitness()
     
     def _start_network_interface(self):
         print("[LOG] Starting network interface")
@@ -87,11 +93,15 @@ class Simulator(QtWidgets.QMainWindow):
             print(f"[LOG] Received a total of {len(self._recorded_data)} sensor messages")
 
             self.timer.stop()
-            self.network_interface.close()
+            #self.network_interface.close()
+            self.results = self._compute_fitness()
 
-            print(self._compute_fitness())
+            print(f"[LOG] Fitness: {self.results}")
 
-            # close application ?
+            self.simulation_queue.put(self.results)
+
+            application.quit()
+
 
     def _send_command(self, direction, start):
         command_types = ["release", "push"]
