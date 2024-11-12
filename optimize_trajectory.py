@@ -7,6 +7,8 @@ from functools import reduce
 import numpy as np
 import more_itertools
 
+import requests
+
 class GAManager():
     """
     Following class handles the genetic algorithm
@@ -111,13 +113,31 @@ class GAManager():
         # keep the top p of the population
         return population[:int(p * len(population))]
 
+    def _format_controls(self, controls):
+        def format_control(control):
+            return [
+                ["forward", control[0]],
+                ["back", control[1]],
+                ["left", control[2]],
+                ["right", control[3]],
+            ]
+
+        return [format_control(control) for control in controls]
+
     def _simulate(self, controls):
         """
         From a sequence of controls, simulate the car and return the position at each frame
         """
 
-        # TODO: call the simulation...
-        positions = [[randint(-10, 10), randint(-20, 20)] for _ in controls]
+        endpoint = "http://127.0.0.1:5000/api/simulate"
+
+        data = {
+            "controls": self._format_controls(controls),
+            "init_pos": [0, 0],
+            "init_speed": 0
+        }
+
+        positions = requests.post(endpoint, json=data)
         return list(zip(controls, positions))
 
     def _one_point_crossover(self, controls1, controls2):

@@ -88,8 +88,7 @@ class Simulator(QtWidgets.QMainWindow):
             print(f"[LOG] Received a total of {len(self._recorded_data)} sensor messages")
 
             self.timer.stop()
-            self.network_interface.close()
-            self.simulation_queue.put(self._compute_fitness())
+            self.simulation_queue.put(self._recorded_data)
 
             application.quit()
 
