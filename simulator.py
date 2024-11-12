@@ -13,13 +13,14 @@ class Simulator(QtWidgets.QMainWindow):
     on a car instance through
     the network
     """
-    def __init__(self, controls, init_position, init_speed, simulation_queue):
+    def __init__(self, controls, init_position, init_speed, init_rotation, simulation_queue):
         # TODO: Add init_speed
         super().__init__()
 
         self._controls = deque(controls)
         self._init_position = init_position
         self._init_speed = init_speed
+        self._init_rotation = init_rotation 
         self.simulation_queue = simulation_queue
         self._recorded_data = []
 
@@ -58,7 +59,7 @@ class Simulator(QtWidgets.QMainWindow):
         # setup track and car
         track = Track("rallyrobopilot/assets/SimpleTrack/track_metadata.json")
 
-        car = Car(position=self._init_position, speed=self._init_speed)
+        car = Car(position=self._init_position, speed=self._init_speed, rotation=(0, self._init_rotation, 0))
         car.sports_car()
         car.set_track(track)
 
