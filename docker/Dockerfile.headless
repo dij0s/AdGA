@@ -24,7 +24,7 @@ RUN apt-get update -y \
 # Rally simulation part
 WORKDIR /app
 RUN apt-get install -y git && apt-get clean
-RUN git clone https://github.com/dij0s/AdGA.git -b simulator .
+RUN git clone https://github.com/dij0s/AdGA.git .
 COPY . .
 
 RUN set -xe \
