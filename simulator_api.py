@@ -15,12 +15,10 @@ simulation_queue = Queue()
 
 def run_simulation(fake_controls, init_pos, init_speed, simulation_queue):
     # Run Ursina and PyQt within this process
-    from PyQt6 import QtWidgets
     from ursina import Ursina
 
     # Initialize the Ursina and PyQt applications
     ursina_app = Ursina(size=(320, 256))
-    autopilot_app = QtWidgets.QApplication(sys.argv)
 
     # Start the simulator
     simulation = Simulator(fake_controls, init_pos, init_speed, simulation_queue)
