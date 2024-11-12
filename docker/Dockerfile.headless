@@ -41,4 +41,4 @@ RUN pip install python3_xlib
 
 # Setup as entrypoint to allow
 # for inline argument passing
-ENTRYPOINT ["/bin/bash", "xvfb-startup.sh", "python", "run_sim.py"]
+CMD ["bash", "-c", "./xvfb-startup.sh"]
