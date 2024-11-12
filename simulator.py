@@ -10,10 +10,14 @@ class Simulator:
     on a car instance through
     the network
     """
-    def __init__(self, controls, init_position, init_speed):
+    def __init__(self, controls, init_position, init_speed, simulation_queue):
+        # TODO: Add init_speed
+        super().__init__()
+
         self._controls = deque(controls)
         self._init_position = init_position
         self._init_speed = init_speed
+        self.simulation_queue = simulation_queue
         self._recorded_data = []
 
         # setup backend
@@ -78,8 +82,7 @@ class Simulator:
             # Stop the network loop and clean up
             self.running = False
             self.network_interface.close()
-
-            print(self._compute_fitness())
+            self.simulation_queue.put(self._recorded_data)
 
     def _send_command(self, direction, start):
         command_types = ["release", "push"]
