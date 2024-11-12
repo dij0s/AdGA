@@ -28,13 +28,15 @@ class GAManager():
         """
 
         # load the recorded data
-        controls, positions = self._load_record(record_file)
+        controls, positions, speed, angle = self._load_record(record_file)
 
         # split the data into individual trajectories
         controls = self._split_to_subarrays(controls, self.frames_per_trajectory)
         positions = self._split_to_subarrays(positions, self.frames_per_trajectory)
+        speeds = self._split_to_subarrays(speed, self.frames_per_trajectory)
+        angles = self._split_to_subarrays(angle, self.frames_per_trajectory)
 
-        return list(zip(controls, positions))
+        return list(zip(controls, positions, speeds, angles))
 
     def create_population(self, controls, positions, n, p):
         """
@@ -49,7 +51,7 @@ class GAManager():
             for _ in range(n)
         ]
 
-    def evolve(self, population, iterations):
+    def evolve(self, population, iterations, initial_state):
         """
         Evolve the population for a given number of iterations
         """
@@ -57,7 +59,7 @@ class GAManager():
         for _ in range(iterations):
             # Simluate the population to get the positions
             simulation_results = [
-                self._simulate([x for x, _ in individual])
+                self._simulate([x for x, _ in individual], initial_state)
                 for individual in population
             ]
 
@@ -124,7 +126,7 @@ class GAManager():
 
         return [format_control(control) for control in controls]
 
-    def _simulate(self, controls):
+    def _simulate(self, controls, init_state):
         """
         From a sequence of controls, simulate the car and return the position at each frame
         """
@@ -133,8 +135,9 @@ class GAManager():
 
         data = {
             "controls": self._format_controls(controls),
-            "init_pos": [0, 0],
-            "init_speed": 0
+            "init_pos": init_state["init_pos"],
+            "init_speed": init_state["init_speed"],
+            "init_rotation": init_state["init_rotation"],
         }
 
         positions = requests.post(endpoint, json=data)
@@ -188,9 +191,14 @@ class GAManager():
 
         with lzma.open(record_file, "rb") as file:
             return reduce(
-                lambda res, sensor: ([*res[0], sensor.current_controls], [*res[1], [sensor.car_position[0], sensor.car_position[2]]]),
+                lambda res, sensor: (
+                    [*res[0], sensor.current_controls], 
+                    [*res[1], [sensor.car_position[0], sensor.car_position[2]]],
+                    [*res[2], sensor.car_speed],
+                    [*res[3], sensor.car_angle]
+                ),
                 pickle.load(file),
-                ([], [])
+                ([], [], [], [])
             )
         
     def _split_to_subarrays(self, array, n):
@@ -200,9 +208,15 @@ genetic_algorithm = GAManager(population_size=10)
 
 trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241106093055.npz")
 for trajectory in trajectories:
+    initial_state = {
+        "init_pos": trajectory[1][0],
+        "init_speed": trajectory[2][0],
+        "init_rotation": trajectory[3][0],
+    }
+    
     pop = genetic_algorithm.create_population(trajectory[0], trajectory[1], n=10, p=0.2)
 
-    evolved_pop, fitnesses = genetic_algorithm.evolve(pop, 10)
+    evolved_pop, fitnesses = genetic_algorithm.evolve(pop, 10, initial_state)
 
     z = zip(evolved_pop, fitnesses)
     best = sorted(z, key=lambda x: x[1], reverse=True)[0]
