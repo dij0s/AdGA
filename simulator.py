@@ -22,8 +22,6 @@ class Simulator(QtWidgets.QMainWindow):
         self._init_speed = init_speed
         self.simulation_queue = simulation_queue
         self._recorded_data = []
-        self.done = False
-        self.results = None
 
         # setup backend
         self._setup_server()
@@ -40,9 +38,6 @@ class Simulator(QtWidgets.QMainWindow):
 
     def get_recorded_data(self):
         return self._recorded_data
-
-    def get_fitness(self):
-        return self._compute_fitness()
     
     def _start_network_interface(self):
         print("[LOG] Starting network interface")
@@ -93,12 +88,8 @@ class Simulator(QtWidgets.QMainWindow):
             print(f"[LOG] Received a total of {len(self._recorded_data)} sensor messages")
 
             self.timer.stop()
-            #self.network_interface.close()
-            self.results = self._compute_fitness()
-
-            print(f"[LOG] Fitness: {self.results}")
-
-            self.simulation_queue.put(self.results)
+            self.network_interface.close()
+            self.simulation_queue.put(self._compute_fitness())
 
             application.quit()
 
