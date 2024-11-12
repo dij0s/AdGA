@@ -7,8 +7,9 @@ RUN apt-get install 'ffmpeg'\
     'libxext6'  -y
 
 # Headless part
-RUN apt-get update -y \
-  && apt-get install --no-install-recommends -y xvfb libgl1-mesa-dri
+RUN apt-get update && \
+    apt-get install -y xvfb x11-utils libgl1-mesa-dri && \
+    rm -rf /var/lib/apt/lists/*
   
 WORKDIR /usr/bin
 COPY xvfb-startup.sh .
@@ -17,12 +18,9 @@ RUN chmod +x xvfb-startup.sh
 RUN sed -i 's/\r$//' xvfb-startup.sh
 ARG RESOLUTION="1920x1080x24"
 ENV XVFB_RES="${RESOLUTION}"
-ARG XARGS=""
-ENV XVFB_ARGS="${XARGS}"
 
 RUN apt-get update -y \
   && apt-get install --no-install-recommends -y mesa-utils
-
 # Rally simulation part
 WORKDIR /app
 RUN apt-get install -y git && apt-get clean
@@ -43,6 +41,4 @@ RUN pip install python3_xlib
 
 # Setup as entrypoint to allow
 # for inline argument passing
-# ENTRYPOINT ["python", "run_sim.py"]
-# ENTRYPOINT ["/bin/bash"]
 ENTRYPOINT ["/usr/bin/xvfb-startup.sh", "python", "run_sim.py"]
