@@ -1,6 +1,4 @@
 from ursina import *
-import sys
-
 from simulator import Simulator
 
 ursina_app = Ursina(size=(320,256))
