@@ -1,11 +1,8 @@
-import sys
 import time
 from flask import Flask, jsonify, request
 from multiprocessing import Process, Queue
 from simulator import Simulator
-import json
-import os
-from ursina import application
+from ursina import *
 import time
 
 app = Flask(__name__)
@@ -51,4 +48,4 @@ def simulate():
     return jsonify(simulation_data)
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
