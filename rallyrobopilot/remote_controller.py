@@ -61,7 +61,6 @@ class RemoteController(Entity):
 
     def update(self):
         self.update_network()
-        self.process_remote_commands()
         self.process_sensing()
 
     def process_sensing(self):
@@ -69,6 +68,7 @@ class RemoteController(Entity):
             return
 
         if time.time() - self.last_sensing >= self.sensing_period:
+            self.process_remote_commands()
             snapshot = SensingSnapshot()
             # snapshot.current_controls = (held_keys['w'] or held_keys["up arrow"],
                                         #  held_keys['s'] or held_keys["down arrow"],
