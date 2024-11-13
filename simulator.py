@@ -88,19 +88,3 @@ class Simulator:
     def _send_command(self, direction, start):
         command_types = ["release", "push"]
         self.network_interface.send_cmd(command_types[start] + " " + direction + ";")
-
-    def _compute_fitness(self):
-        # Compute fitness of current trajectory
-        # Fitness is the distance travelled by the car
-        total_vector_magnitude = 0.0
-        for p1, p2 in zip(self._recorded_data[:-1], self._recorded_data[1:]):
-            x1, z1, y1 = p1
-            x2, z2, y2 = p2
-
-            dx = x2 - x1
-            dz = z2 - z1
-            dy = y2 - y1
-            
-            total_vector_magnitude += sqrt(dx**2 + dy**2 + dz**2)
-
-        return total_vector_magnitude
