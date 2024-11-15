@@ -2,11 +2,15 @@ import subprocess
 from optimize_trajectory import GAManager
 
 def main():
+    print("Hello")
     genetic_algorithm = GAManager(population_size=10)
+    print("world")
 
     # Split the recording into trajectories
     trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241106093055.npz")
     num_trajectories = len(trajectories)
+
+    print("Num traj ", num_trajectories)
 
     # Create the Slurm job script
     slurm_script = f"""#!/bin/bash
@@ -23,6 +27,8 @@ module load python/3.8  # Load the appropriate Python module
 # Run the Python script with the task ID
 python optimize_trajectory_slurm.py ${{SLURM_ARRAY_TASK_ID}}
 """
+
+    print(slurm_script)
 
     # Write the Slurm job script to a file
     with open("submit_jobs.sh", "w") as f:
