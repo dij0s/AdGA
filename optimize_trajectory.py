@@ -3,6 +3,7 @@ import pickle, lzma
 
 from random import random, randint
 from functools import reduce
+import time
 
 import numpy as np
 import more_itertools
@@ -31,10 +32,10 @@ class GAManager():
         controls, positions, speed, angle = self._load_record(record_file)
 
         # split the data into individual trajectories
-        controls = self._split_to_subarrays(controls, self.frames_per_trajectory)
-        positions = self._split_to_subarrays(positions, self.frames_per_trajectory)
-        speeds = self._split_to_subarrays(speed, self.frames_per_trajectory)
-        angles = self._split_to_subarrays(angle, self.frames_per_trajectory)
+        controls = self.split_to_subarrays(controls, self.frames_per_trajectory)
+        positions = self.split_to_subarrays(positions, self.frames_per_trajectory)
+        speeds = self.split_to_subarrays(speed, self.frames_per_trajectory)
+        angles = self.split_to_subarrays(angle, self.frames_per_trajectory)
 
         return list(zip(controls, positions, speeds, angles))
 
@@ -90,11 +91,12 @@ class GAManager():
 
         return population, fitnesses
 
-    def tournament_selection(self, population, fitnesses, k=5):
+    def tournament_selection(self, population, fitnesses, k=2):
         """
         Select the best individual among k randomly selected individuals
         """
 
+        print(len(population))
         # select k random individuals
         random_indices = [randint(0, len(population) - 1) for _ in range(k)]
         tournament_individuals = [population[i] for i in random_indices]
@@ -131,7 +133,7 @@ class GAManager():
         From a sequence of controls, simulate the car and return the position at each frame
         """
 
-        endpoint = "http://127.0.0.1:5000/api/simulate"
+        endpoint = "http://192.168.88.248:32307/api/simulate"
 
         data = {
             "controls": self._format_controls(controls),
@@ -141,6 +143,7 @@ class GAManager():
         }
 
         positions = requests.post(endpoint, json=data)
+        positions = positions.json()
         return list(zip(controls, positions))
 
     def _one_point_crossover(self, controls1, controls2):
@@ -200,14 +203,17 @@ class GAManager():
                 pickle.load(file),
                 ([], [], [], [])
             )
-        
-    def _split_to_subarrays(self, array, n):
-        return [array[i:i + n] for i in range(0, len(array), n)]
+
+    def split_to_subarrays(self, array, window_size=10, overlap=4):
+        step_size = window_size - overlap
+        return [array[i:i + window_size] for i in range(0, len(array) - window_size + 1, step_size)]
 
 genetic_algorithm = GAManager(population_size=10)
 
 trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241106093055.npz")
-for trajectory in trajectories:
+
+time_before = time.time()
+for trajectory in trajectories[:1]:
     initial_state = {
         "init_pos": trajectory[1][0],
         "init_speed": trajectory[2][0],
@@ -221,3 +227,4 @@ for trajectory in trajectories:
     z = zip(evolved_pop, fitnesses)
     best = sorted(z, key=lambda x: x[1], reverse=True)[0]
     print(best)
+
