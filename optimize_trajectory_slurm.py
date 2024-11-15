@@ -2,18 +2,22 @@ import sys
 import time
 import numpy as np
 from optimize_trajectory import GAManager
+from mpi4py import MPI
 
-def main(task_id):
+def main():
     genetic_algorithm = GAManager(population_size=10)
 
     # Split the recording into trajectories
     trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241106093055.npz")
 
-    # Ensure the task_id is within the range of trajectories
-    if task_id >= len(trajectories):
-        raise ValueError(f"Task ID {task_id} is out of range for the number of trajectories {len(trajectories)}")
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
 
-    trajectory = trajectories[task_id]
+    # Ensure the rank is within the range of trajectories
+    if rank >= len(trajectories):
+        raise ValueError(f"Rank {rank} is out of range for the number of trajectories {len(trajectories)}")
+
+    trajectory = trajectories[rank]
     initial_state = {
         "init_pos": trajectory[1][0],
         "init_speed": trajectory[2][0],
@@ -26,12 +30,12 @@ def main(task_id):
 
     z = zip(evolved_pop, fitnesses)
     best = sorted(z, key=lambda x: x[1], reverse=True)[0]
-    print(best)
+
+    # Gather the best result from all ranks (root process will collect all)
+    bests = comm.gather(best, root=0)
+
+    if rank == 0:
+        print("Bests: ", bests)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python optimize_trajectory_slurm.py <task_id>")
-        sys.exit(1)
-
-    task_id = int(sys.argv[1])
-    main(task_id)
+    main()
