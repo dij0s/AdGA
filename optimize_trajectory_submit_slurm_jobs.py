@@ -15,12 +15,16 @@ def main():
     # Create the Slurm job script
     slurm_script = f"""#!/bin/bash
 #SBATCH --job-name=ga_optimization
-#SBATCH --output=ga_optimization_%A_%a.out
-#SBATCH --error=ga_optimization_%A_%a.err
+#SBATCH --output=ga_ouputs/ga_optimization_%A_%a.out
+#SBATCH --error=ga_outputs/ga_optimization_%A_%a.err
 #SBATCH --array=0-{num_trajectories - 1}
 #SBATCH --ntasks=1
 #SBATCH --time=01:00:00
 #SBATCH --mem=4G
+
+mkdir -p ga_outputs
+
+source .venv/bin/activate
 
 # Run the Python script with the task ID
 /usr/bin/python3 optimize_trajectory_slurm.py ${{SLURM_ARRAY_TASK_ID}}
