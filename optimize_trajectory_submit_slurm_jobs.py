@@ -22,10 +22,8 @@ def main():
 #SBATCH --time=01:00:00
 #SBATCH --mem=4G
 
-module load python/3.8  # Load the appropriate Python module
-
 # Run the Python script with the task ID
-python optimize_trajectory_slurm.py ${{SLURM_ARRAY_TASK_ID}}
+/usr/bin/python3 optimize_trajectory_slurm.py ${{SLURM_ARRAY_TASK_ID}}
 """
 
     print(slurm_script)
