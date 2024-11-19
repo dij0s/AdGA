@@ -15,19 +15,18 @@ def main():
     # Create the Slurm job script
     slurm_script = f"""#!/bin/bash
 #SBATCH --job-name=ga_optimization
-#SBATCH --output=ga_ouputs/ga_optimization_%A_%a.out
-#SBATCH --error=ga_outputs/ga_optimization_%A_%a.err
-#SBATCH --array=0-{num_trajectories - 1}
-#SBATCH --ntasks=1
-#SBATCH --time=01:00:00
-#SBATCH --mem=4G
+#SBATCH --output=ga_optimization_%A_%a.out
+#SBATCH --error=ga_optimization_%A_%a.err
+#SBATCH --nodelist=calypso[0]             # Use only these 3 nodes
+#SBATCH --nodes=1                             # Use 3 nodes (each node will run some jobs)
+#SBATCH --tasks=10                           # 56 tasks, one per array job (task array size)
+#SBATCH --time=01:00:00                       # Time limit for each task
 
-mkdir -p ga_outputs
 
-source .venv/bin/activate
+source /home/dimitri.imfeld/nas_home/AdGA/.venv/bin/activate
 
 # Run the Python script with the task ID
-/usr/bin/python3 optimize_trajectory_slurm.py ${{SLURM_ARRAY_TASK_ID}}
+mpirun -np 10 /home/dimitri.imfeld/nas_home/AdGA/.venv/bin/python3 optimize_trajectory_slurm.py
 """
 
     print(slurm_script)

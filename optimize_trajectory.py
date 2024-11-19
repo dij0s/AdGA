@@ -133,7 +133,7 @@ class GAManager():
         From a sequence of controls, simulate the car and return the position at each frame
         """
 
-        endpoint = "http://192.168.88.248:32307/api/simulate"
+        endpoint = "http://192.168.88.248:30308/api/simulate"
 
         data = {
             "controls": self._format_controls(controls),
