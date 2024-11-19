@@ -193,16 +193,7 @@ class GAManager():
         """
 
         with lzma.open(record_file, "rb") as file:
-            return reduce(
-                lambda res, sensor: (
-                    [*res[0], sensor.current_controls], 
-                    [*res[1], [sensor.car_position[0], sensor.car_position[2]]],
-                    [*res[2], sensor.car_speed],
-                    [*res[3], sensor.car_angle]
-                ),
-                pickle.load(file),
-                ([], [], [], [])
-            )
+            return pickle.load(file)
 
     def split_to_subarrays(self, array, window_size=10, overlap=4):
         step_size = window_size - overlap
@@ -214,7 +205,7 @@ if __name__ == "__main__":
 
     genetic_algorithm = GAManager(population_size=10)
 
-    trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241106093055.npz")
+    trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241119111936.npz")
 
     time_before = time.time()
     for trajectory in trajectories[:1]:

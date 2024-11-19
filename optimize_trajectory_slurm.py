@@ -8,7 +8,7 @@ def main():
     genetic_algorithm = GAManager(population_size=10)
 
     # Split the recording into trajectories
-    trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241106093055.npz")
+    trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241119111936.npz")
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
