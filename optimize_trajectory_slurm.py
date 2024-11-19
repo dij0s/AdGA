@@ -14,6 +14,9 @@ def main():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
+    print(f"Starting rank {rank}/{size}")
+    print(f"There are {len(trajectories)} trajectories")
+
     # Ensure the rank is within the range of trajectories
     if rank >= len(trajectories):
         print(f"Rank {rank} is out of range for the number of trajectories {len(trajectories)}")
