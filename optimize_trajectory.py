@@ -9,6 +9,8 @@ import numpy as np
 import more_itertools
 
 import requests
+import asyncio
+import aiohttp
 
 class GAManager():
     """
@@ -52,17 +54,16 @@ class GAManager():
             for _ in range(n)
         ]
 
-    def evolve(self, population, iterations, initial_state):
+    async def evolve(self, population, iterations, initial_state):
         """
         Evolve the population for a given number of iterations
         """
 
         for _ in range(iterations):
-            # Simluate the population to get the positions
-            simulation_results = [
-                self._simulate([x for x, _ in individual], initial_state)
-                for individual in population
-            ]
+            # Simulate the population to get the positions
+            simulation_results = await asyncio.gather(
+                *[self._simulate([x for x, _ in individual], initial_state) for individual in population]
+            )
 
             positions = [
                 [position for _, position in simulation_result]
@@ -128,7 +129,7 @@ class GAManager():
 
         return [format_control(control) for control in controls]
 
-    def _simulate(self, controls, init_state):
+    async def _simulate(self, controls, init_state):
         """
         From a sequence of controls, simulate the car and return the position at each frame
         """
@@ -142,9 +143,13 @@ class GAManager():
             "init_rotation": init_state["init_rotation"],
         }
 
-        positions = requests.post(endpoint, json=data)
-        positions = positions.json()
-        return list(zip(controls, positions))
+        print(f"Sending request for controls {controls}")
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(endpoint, json=data) as response:
+                positions = await response.json()
+                print(f"Received response: {positions} for controls {controls}")
+                return list(zip(controls, positions))
 
     def _one_point_crossover(self, controls1, controls2):
         """
@@ -217,7 +222,7 @@ if __name__ == "__main__":
         
         pop = genetic_algorithm.create_population(trajectory[0], trajectory[1], n=10, p=0.2)
 
-        evolved_pop, fitnesses = genetic_algorithm.evolve(pop, 10, initial_state)
+        evolved_pop, fitnesses = asyncio.run(genetic_algorithm.evolve(pop, 10, initial_state))
 
         z = zip(evolved_pop, fitnesses)
         best = sorted(z, key=lambda x: x[1], reverse=True)[0]
