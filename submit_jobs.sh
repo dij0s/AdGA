@@ -13,4 +13,4 @@ source /home/dimitri.imfeld/nas_home/AdGA/.venv/bin/activate
 whoami
 
 # Run the Python script with the task ID
-mpirun -np 10 /home/dimitri.imfeld/nas_home/AdGA/.venv/bin/python3 mpi_test.py > out.txt
+mpirun -np 10 /home/dimitri.imfeld/nas_home/AdGA/.venv/bin/python3 optimize_trajectory_slurm.py

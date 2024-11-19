@@ -12,6 +12,7 @@ def main():
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
+    size = comm.Get_size()
 
     # Ensure the rank is within the range of trajectories
     if rank >= len(trajectories):
@@ -31,11 +32,21 @@ def main():
     z = zip(evolved_pop, fitnesses)
     best = sorted(z, key=lambda x: x[1], reverse=True)[0]
 
-    # Gather the best result from all ranks (root process will collect all)
-    bests = comm.gather(best, root=0)
+    best_trajectory = best[0]
+    sendbuf = np.array(best_trajectory)
+
+    # Prepare the receive buffer on the root process
+    if rank == 0:
+        recvbuf = np.empty(size)
+    else:
+        recvbuf = None
+
+    comm.Gather(sendbuf, recvbuf, root=0)
 
     if rank == 0:
-        print("Bests: ", bests)
+        print("Best trajectories: ", recvbuf)
+
+    MPI.Finalize()
 
 if __name__ == "__main__":
     main()
