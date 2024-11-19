@@ -16,7 +16,9 @@ def main():
 
     # Ensure the rank is within the range of trajectories
     if rank >= len(trajectories):
-        raise ValueError(f"Rank {rank} is out of range for the number of trajectories {len(trajectories)}")
+        print(f"Rank {rank} is out of range for the number of trajectories {len(trajectories)}")
+        MPI.COMM_WORLD.Abort(1)  
+        return
 
     trajectory = trajectories[rank]
     initial_state = {
