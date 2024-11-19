@@ -33,7 +33,7 @@ def main():
     best = sorted(z, key=lambda x: x[1], reverse=True)[0]
 
     best_trajectory = best[0]
-    sendbuf = np.array(best_trajectory)
+    sendbuf = (rank, np.array(best_trajectory))
 
     # Prepare the receive buffer on the root process
     if rank == 0:
@@ -44,7 +44,7 @@ def main():
     comm.Gather(sendbuf, recvbuf, root=0)
 
     if rank == 0:
-        print("Best trajectories: ", recvbuf)
+        np.savez("best_trajectory.npz", recvbuf)
 
     MPI.Finalize()
 
