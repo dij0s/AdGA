@@ -3,9 +3,11 @@ import time
 import numpy as np
 from optimize_trajectory import GAManager
 from mpi4py import MPI
+import asyncio
+import aiohttp
 
 def main():
-    genetic_algorithm = GAManager(population_size=10)
+    genetic_algorithm = GAManager(population_size=10, elite_size=2, mutation_rate=0.1)
 
     # Split the recording into trajectories
     trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241119111936.npz")
@@ -30,9 +32,9 @@ def main():
         "init_rotation": trajectory[3][0],
     }
 
-    pop = genetic_algorithm.create_population(trajectory[0], trajectory[1], n=10, p=0.2)
+    pop = genetic_algorithm.create_population(trajectory[0], trajectory[1])
 
-    evolved_pop, fitnesses = genetic_algorithm.evolve(pop, 10, initial_state)
+    evolved_pop, fitnesses = asyncio.run(genetic_algorithm.evolve(pop, initial_state, iterations=5))
 
     z = zip(evolved_pop, fitnesses)
     best = sorted(z, key=lambda x: x[1], reverse=True)[0]
