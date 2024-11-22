@@ -44,9 +44,13 @@ def simulate():
     process = Process(target=run_simulation, args=(controls, init_pos, init_speed, init_rotation, simulation_queue))
     process.start()
     
-    # wait for something to be in the simulation queue
+    # Wait for something to be in the simulation queue
     while simulation_queue.empty():
         time.sleep(1)
+
+        # Check if the process is still alive - if not, respond with an error
+        if not process.is_alive():
+            return jsonify({"error": "Simulation process has exited unexpectedly (crashed or something)"}), 500
 
     simulation_data = simulation_queue.get()
     process.kill()
