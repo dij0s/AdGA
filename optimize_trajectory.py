@@ -19,9 +19,19 @@ class GAManager():
     autopilot's trajectory
     """
 
-    def __init__(self, frames_per_trajectory = 10, population_size = 100):
+    def __init__(self, frames_per_trajectory = 10, population_size = 100, elite_size = 20, mutation_rate = 0.1):
+        if frames_per_trajectory < 2:
+            raise ValueError("frames_per_trajectory must be at least 2")
+
+        if population_size < 2:
+            raise ValueError("population_size must be at least 2")
+
         self.frames_per_trajectory = frames_per_trajectory
         self.population_size = population_size
+        self.elite_size = elite_size
+        self.mutation_rate = mutation_rate
+        self.elite_percentage = elite_size / population_size
+
 
     def split_recording_into_trajectories(self, record_file):
         """
@@ -41,20 +51,20 @@ class GAManager():
 
         return list(zip(controls, positions, speeds, angles))
 
-    def create_population(self, controls, positions, n, p):
+    def create_population(self, controls, positions):
         """
         Create a population of n individuals from the given controls and positions
         """
 
         return [
             [
-                (control, position) if random() > p else (self._flip_single_bit(control), position)
+                (control, position) if random() > self.mutation_rate else (self._flip_single_bit(control), position)
                 for (control, position) in zip(controls, positions)
             ]
-            for _ in range(n)
+            for _ in range(self.population_size)
         ]
 
-    async def evolve(self, population, iterations, initial_state):
+    async def evolve(self, population, initial_state, iterations=100):
         """
         Evolve the population for a given number of iterations
         """
@@ -74,8 +84,8 @@ class GAManager():
 
             population = simulation_results
 
-            # initialize the next generation with the 20% best individuals
-            population = self._select_elites(population, fitnesses, p=0.2)
+            # initialize the next generation with the top best individuals
+            population = self._select_elites(population, fitnesses)
 
             while len(population) < self.population_size:
                 # select two good parents
@@ -107,13 +117,15 @@ class GAManager():
         best_fitness = max(tournament_fitnesses)
         return tournament_individuals[tournament_fitnesses.index(best_fitness)]
 
-    def _select_elites(self, population, fitnesses, p=0.2):
+    def _select_elites(self, population, fitnesses):
         """
         Select the top p individuals of the population
         """
 
         # sort the population by fitness
         population = [x for _, x in sorted(zip(fitnesses, population), reverse=True)]
+
+        p = self.elite_percentage
 
         # keep the top p of the population
         return population[:int(p * len(population))]
@@ -208,7 +220,7 @@ class GAManager():
 if __name__ == "__main__":
     print("optimize_trajectory.py")
 
-    genetic_algorithm = GAManager(population_size=10)
+    genetic_algorithm = GAManager(population_size=10, elite_size=2, mutation_rate=0.1)
 
     trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241119111936.npz")
 
@@ -220,9 +232,9 @@ if __name__ == "__main__":
             "init_rotation": trajectory[3][0],
         }
         
-        pop = genetic_algorithm.create_population(trajectory[0], trajectory[1], n=10, p=0.2)
+        pop = genetic_algorithm.create_population(trajectory[0], trajectory[1])
 
-        evolved_pop, fitnesses = asyncio.run(genetic_algorithm.evolve(pop, 10, initial_state))
+        evolved_pop, fitnesses = asyncio.run(genetic_algorithm.evolve(pop, initial_state, iterations=5))
 
         z = zip(evolved_pop, fitnesses)
         best = sorted(z, key=lambda x: x[1], reverse=True)[0]
