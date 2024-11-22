@@ -59,6 +59,7 @@ def main():
     comm.Gather(sendbuf, recvbuf, root=0)
 
     if rank == 0:
+        recvbuf = recvbuf.reshape(size, -1)  # Each row corresponds to one process's data
         np.savez("best_trajectory.npz", recvbuf)
 
     MPI.Finalize()

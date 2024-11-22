@@ -244,6 +244,7 @@ class GAManager():
 
 if __name__ == "__main__":
     print("optimize_trajectory.py")
+    start_time = time.time()
 
     genetic_algorithm = GAManager(population_size=10, elite_size=2, mutation_rate=0.1)
 
@@ -264,4 +265,6 @@ if __name__ == "__main__":
         z = zip(evolved_pop, fitnesses)
         best = sorted(z, key=lambda x: x[1], reverse=True)[0]
         print(best)
+
+    print(f"Total time taken:  {time.time() - start_time} seconds")
 
