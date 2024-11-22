@@ -43,6 +43,9 @@ class GAManager():
         # load the recorded data
         controls, positions, speed, angle = self._load_record(record_file)
 
+        # convert the positions to a 3D format (y is the vertical axis)
+        positions = [(x, 0, y) for x, y in positions]
+
         # split the data into individual trajectories
         controls = self.split_to_subarrays(controls, self.frames_per_trajectory)
         positions = self.split_to_subarrays(positions, self.frames_per_trajectory)
