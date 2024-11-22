@@ -12,6 +12,8 @@ import requests
 import asyncio
 import aiohttp
 
+import traceback
+
 class GAManager():
     """
     Following class handles the genetic algorithm
@@ -144,7 +146,7 @@ class GAManager():
 
         return [format_control(control) for control in controls]
 
-    async def _simulate(self, controls, init_state, retries=3):
+    async def _simulate(self, controls, init_state, retries=10):
         """
         From a sequence of controls, simulate the car and return the position at each frame
         """
@@ -162,13 +164,14 @@ class GAManager():
 
         for retry in range(retries):
             try: 
-                async with aiohttp.ClientSession() as session:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(20)) as session:
                     async with session.post(endpoint, json=data) as response:
                         positions = await response.json()
                         print(f"Received response: {positions} for controls {controls}")
                         return list(zip(controls, positions))
             except Exception as e:
                 print(f"Attempt {retry+ 1} failed: {e}")
+                print(traceback.format_exc())
                 if isinstance(e, aiohttp.ClientResponseError):
                     print(f"HTTP error {e.status}: {e.message}")
                     if e.status == 500:
@@ -176,7 +179,7 @@ class GAManager():
                         print(f"Error details: {error_details}")
                 if retry == retries - 1:
                     raise
-                await asyncio.sleep(2 ** retry)  # Exponential backoff
+                await asyncio.sleep(2 ** max(4, retry))  # Exponential backoff
 
 
     def _one_point_crossover(self, controls1, controls2):
