@@ -17,6 +17,9 @@ class OsdNNMsgProcessor:
     def __init__(self, ga_inputs):
         # load commands into queue
         raw_inputs = np.load(ga_inputs)['arr_0'].copy().reshape(-1, 8)
+        
+        # only take n-overlap first
+        # commands to not handle overlap
         self._commands = deque([map(lambda x: int(x), raw_input[1:5]) for raw_input in raw_inputs])
         
         self._directions = ["forward", "back", "left", "right"]

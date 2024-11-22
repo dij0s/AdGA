@@ -8,7 +8,7 @@ from rallyrobopilot import Car, RemoteController, Track, SunLight, MultiRaySenso
 
 # Window
 window.vsync = True # Set to false to uncap FPS limit of 60
-app = Ursina(size=(1280,1024))
+app = Ursina(size=(320,256))
 window.title = "Rally"
 window.borderless = False
 window.show_ursina_splash = False
@@ -23,7 +23,7 @@ global_models = [ "sports-car.obj", "particles.obj",  "line.obj"]
 global_texs = [ "sports-red.png", "sports-blue.png", "sports-green.png", "sports-orange.png", "sports-white.png", "particle_forest_track.png", "red.png"]
 
 # Starting new thread for assets
-track_metadata = "rallyrobopilot/assets/VisualTrack/track_metadata.json"
+track_metadata = "rallyrobopilot/assets/NotSoSimpleTrack/track_metadata.json"
 track = Track(track_metadata)
 track.load_assets(global_models, global_texs)
 
@@ -33,14 +33,7 @@ car.sports_car()
 # Tracks
 car.set_track(track)
 
-# Setup Flask
-flask_app = Flask(__name__)
-flask_thread = Thread(target=flask_app.run, kwargs={'host': "0.0.0.0", 'port': 5000})
-print("Flask server running on port 5000")
-flask_thread.start()
-        
-
-remote_controller = RemoteController(car = car, connection_port=7654, flask_app=flask_app)
+remote_controller = RemoteController(car = car, connection_port=7654, flask_app=None)
 
 car.multiray_sensor = MultiRaySensor(car, 15, 90)
 car.multiray_sensor.enable()

@@ -40,24 +40,24 @@ class RemoteController(Entity):
         self.last_sensing = -1
 
         # Setup http route for updating.
-        @flask_app.route('/command', methods=['POST'])
-        def send_command_route():
-            if self.car is None:
-                return jsonify({"error": "No car connected"}), 400
+        # @flask_app.route('/command', methods=['POST'])
+        # def send_command_route():
+        #     if self.car is None:
+        #         return jsonify({"error": "No car connected"}), 400
 
-            command_data = request.json
-            if not command_data or 'command' not in command_data:
-                return jsonify({"error": "Invalid command data"}), 400
+        #     command_data = request.json
+        #     if not command_data or 'command' not in command_data:
+        #         return jsonify({"error": "Invalid command data"}), 400
 
-            try:
-                self.client_commands.add(command_data['command'].encode())
-                return jsonify({"status": "Command received"}), 200
-            except Exception as e:
-                return jsonify({"error": str(e)}), 500
+        #     try:
+        #         self.client_commands.add(command_data['command'].encode())
+        #         return jsonify({"status": "Command received"}), 200
+        #     except Exception as e:
+        #         return jsonify({"error": str(e)}), 500
     
-        @flask_app.route('/sensing')
-        def get_sensing_route():
-            return jsonify(self.get_sensing_data()), 200
+        # @flask_app.route('/sensing')
+        # def get_sensing_route():
+        #     return jsonify(self.get_sensing_data()), 200
 
     def update(self):
         self.update_network()
