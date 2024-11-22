@@ -74,7 +74,11 @@ class GAManager():
         Evolve the population for a given number of iterations
         """
 
+        pop_hash = hash(str(population))
+
         for _ in range(iterations):
+            print(f"Starting iteration {_} for population {pop_hash}")
+
             # Simulate the population to get the positions
             simulation_results = await asyncio.gather(
                 *[self._simulate([x for x, _ in individual], initial_state) for individual in population]
@@ -160,14 +164,16 @@ class GAManager():
             "init_rotation": init_state["init_rotation"],
         }
 
-        print(f"Sending request for controls {controls}")
+        #print(f"Sending request for controls {controls}")
+        print("Sending request...")
 
         for retry in range(retries):
             try: 
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(20)) as session:
                     async with session.post(endpoint, json=data) as response:
                         positions = await response.json()
-                        print(f"Received response: {positions} for controls {controls}")
+                        print("Received response!")
+                        #print(f"Received response: {positions} for controls {controls}")
                         return list(zip(controls, positions))
             except Exception as e:
                 print(f"Attempt {retry+ 1} failed: {e}")

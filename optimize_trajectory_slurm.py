@@ -40,6 +40,7 @@ def main():
     best = sorted(z, key=lambda x: x[1], reverse=True)[0]
 
     best_trajectory = best[0]
+    print("best_trajectory", best_trajectory)
     sendbuf = (rank, np.array(best_trajectory))
 
     # Prepare the receive buffer on the root process
