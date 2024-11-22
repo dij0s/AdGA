@@ -16,7 +16,7 @@ def main():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    print(f"Starting rank {rank}/{size}")
+    print(f"Starting rank {rank}/{size-1}")
     print(f"There are {len(trajectories)} trajectories")
 
     # Ensure the rank is within the range of trajectories
@@ -44,14 +44,15 @@ def main():
     flattened_trajectory = np.array([
         (rank, *state, *metrics)  # Combine the tuple and the list into a single flat list
         for state, metrics in best_trajectory
-    ])
+    ], dtype=np.float32)
 
     print("best_trajectory", best_trajectory)
-    sendbuf = flattened_trajectory
+    sendbuf_size = flattened_trajectory.size
+    sendbuf = flattened_trajectory.flatten()
 
     # Prepare the receive buffer on the root process
     if rank == 0:
-        recvbuf = np.empty(size)
+        recvbuf = np.empty(size * sendbuf_size, dtype=np.float32)
     else:
         recvbuf = None
 
