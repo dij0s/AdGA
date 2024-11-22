@@ -27,10 +27,12 @@ def run_simulation(fake_controls, init_pos, init_speed, init_rotation, simulatio
 
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
-    print("[LOG] Received request to simulate")
+    print("[LOG] /api/simulate/ - Received request to simulate")
     try:
         requests.get("http://192.168.89.26:8080")
-    except e:
+    except Exception as e:
+        print("[ERROR] /api/simulate/ - Failed to communicate with the logger")
+        print(e)
         return jsonify({"error": "Failed to communicate with the logger", "exception": e}), 500
         
     data = request.get_json()
