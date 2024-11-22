@@ -30,9 +30,9 @@ def simulate():
     print("[LOG] Received request to simulate")
     try:
         requests.get("http://192.168.89.26:8080")
-    except:
-        pass
-
+    except e:
+        return jsonify({"error": "Failed to communicate with the logger", "exception": e}), 500
+        
     data = request.get_json()
 
     controls = data['controls']
