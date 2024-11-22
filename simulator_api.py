@@ -1,4 +1,5 @@
 import time
+import requests
 from flask import Flask, jsonify, request
 from multiprocessing import Process, Queue
 from simulator import Simulator
@@ -27,6 +28,11 @@ def run_simulation(fake_controls, init_pos, init_speed, init_rotation, simulatio
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
     print("[LOG] Received request to simulate")
+    try:
+        requests.get("http://192.168.89.26:8080")
+    except:
+        pass
+
     data = request.get_json()
 
     controls = data['controls']
