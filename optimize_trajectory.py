@@ -166,6 +166,11 @@ class GAManager():
                         return list(zip(controls, positions))
             except (aiohttp.ClientConnectionError, aiohttp.ClientError, aiohttp.ClientResponseError) as e:
                 print(f"Attempt {retry+ 1} failed: {e}")
+                if isinstance(e, aiohttp.ClientResponseError):
+                    print(f"HTTP error {e.status}: {e.message}")
+                    if e.status == 500:
+                        error_details = await e.response.text()
+                        print(f"Error details: {error_details}")
                 if retry == retries - 1:
                     raise
                 await asyncio.sleep(2 ** retry)  # Exponential backoff
