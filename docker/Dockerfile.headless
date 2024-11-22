@@ -43,5 +43,7 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 RUN pip install python3_xlib
 
 # Setup as entrypoint to allow
-# for inline argument passing
-CMD ["bash", "-c", "./xvfb-startup.sh"]
+# for inline argument 
+# attention, script must not have
+# carriage returns
+CMD ["bash", "-c", "ls -lsa;./xvfb-startup.sh"]
