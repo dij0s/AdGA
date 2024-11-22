@@ -164,7 +164,7 @@ class GAManager():
                         positions = await response.json()
                         print(f"Received response: {positions} for controls {controls}")
                         return list(zip(controls, positions))
-            except (aiohttp.ClientConnectionError, aiohttp.ClientError) as e:
+            except (aiohttp.ClientConnectionError, aiohttp.ClientError, aiohttp.ClientResponseError) as e:
                 print(f"Attempt {retry+ 1} failed: {e}")
                 if retry == retries - 1:
                     raise
