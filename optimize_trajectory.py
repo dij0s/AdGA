@@ -141,7 +141,7 @@ class GAManager():
 
         return [format_control(control) for control in controls]
 
-    async def _simulate(self, controls, init_state):
+    async def _simulate(self, controls, init_state, retries=3):
         """
         From a sequence of controls, simulate the car and return the position at each frame
         """
@@ -157,11 +157,19 @@ class GAManager():
 
         print(f"Sending request for controls {controls}")
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(endpoint, json=data) as response:
-                positions = await response.json()
-                print(f"Received response: {positions} for controls {controls}")
-                return list(zip(controls, positions))
+        for retry in range(retries):
+            try: 
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(endpoint, json=data) as response:
+                        positions = await response.json()
+                        print(f"Received response: {positions} for controls {controls}")
+                        return list(zip(controls, positions))
+            except (aiohttp.ClientConnectionError, aiohttp.ClientError) as e:
+                print(f"Attempt {retry+ 1} failed: {e}")
+                if retry == retries - 1:
+                    raise
+                await asyncio.sleep(2 ** retry)  # Exponential backoff
+
 
     def _one_point_crossover(self, controls1, controls2):
         """
