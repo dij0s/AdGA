@@ -42,12 +42,12 @@ def main():
     best_trajectory = best[0]
 
     flattened_trajectory = np.array([
-        (*state, *metrics)  # Combine the tuple and the list into a single flat list
+        (rank, *state, *metrics)  # Combine the tuple and the list into a single flat list
         for state, metrics in best_trajectory
     ])
 
     print("best_trajectory", best_trajectory)
-    sendbuf = (rank, flattened_trajectory)
+    sendbuf = flattened_trajectory
 
     # Prepare the receive buffer on the root process
     if rank == 0:
