@@ -123,15 +123,6 @@ class GAManager():
 
                 population.append(child)
 
-            # Check for duplicates in the population
-            while len(list(set(population))) < len(population):
-                print(f"Found duplicates in population {pop_hash}, removing and mutating them")
-                # find the duplicates
-                duplicates = [item for item, count in collections.Counter(population).items() if count > 1]
-                for duplicate in duplicates:
-                    population.remove(duplicate)
-                    population.append(self._mutate(duplicate, 0.1))
-
         return population, fitnesses
 
     def tournament_selection(self, population, fitnesses, k=2):
