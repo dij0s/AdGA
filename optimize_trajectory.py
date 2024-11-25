@@ -69,15 +69,21 @@ class GAManager():
             for _ in range(self.population_size)
         ]
 
-    async def evolve(self, population, initial_state, iterations=100):
+    async def evolve(self, population, ref_trajectory, iterations=100):
         """
         Evolve the population for a given number of iterations
         """
 
+        initial_state = {
+            "init_pos": ref_trajectory[1][0],
+            "init_speed": ref_trajectory[2][0],
+            "init_rotation": ref_trajectory[3][0],
+        }
+
         pop_hash = hash(str(population))
 
         for _ in range(iterations):
-            print(f"Starting iteration {_} for population {pop_hash}")
+            print(f"Starting iteration {_}/{iterations} for population {pop_hash}")
 
             # Simulate the population to get the positions
             simulation_results = await asyncio.gather(
@@ -89,7 +95,7 @@ class GAManager():
                 for simulation_result in simulation_results
             ]
 
-            fitnesses = [self._fitness(positions_seq) for positions_seq in positions]
+            fitnesses = [self._fitness2(positions_seq, ref_trajectory) for positions_seq in positions]
 
             population = simulation_results
 
@@ -116,7 +122,6 @@ class GAManager():
         Select the best individual among k randomly selected individuals
         """
 
-        print(len(population))
         # select k random individuals
         random_indices = [randint(0, len(population) - 1) for _ in range(k)]
         tournament_individuals = [population[i] for i in random_indices]
@@ -150,7 +155,7 @@ class GAManager():
 
         return [format_control(control) for control in controls]
 
-    async def _simulate(self, controls, init_state, retries=10):
+    async def _simulate(self, controls, init_state, retries=20):
         """
         From a sequence of controls, simulate the car and return the position at each frame
         """
@@ -164,15 +169,17 @@ class GAManager():
             "init_rotation": init_state["init_rotation"],
         }
 
-        #print(f"Sending request for controls {controls}")
-        print("Sending request...")
+        controls_hash = hash(str(controls))
+        start_time = time.time()
+        print("Sending request for controls {controls_hash} ...")
 
         for retry in range(retries):
             try: 
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(20)) as session:
                     async with session.post(endpoint, json=data) as response:
                         positions = await response.json()
-                        print("Received response!")
+                        end_time = time.time() - start_time
+                        print("Received response for controls {controls_hash} in {end_time} seconds after {retry + 1} retries")
                         #print(f"Received response: {positions} for controls {controls}")
                         return list(zip(controls, positions))
             except Exception as e:
@@ -229,6 +236,58 @@ class GAManager():
         
         return sum([dist(p1, p2) for (p1, p2) in more_itertools.pairwise(positions)])
 
+    def _fitness2(self, positions, ref_trajectory):
+        """
+        Compute the fitness of a sequence of positions
+        We define the fitness as the difference between the total travelled distance by the reference and the simulation,
+        with the goal of maximizing it
+        """
+
+        def dist(p1, p2):
+            return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+
+        reference_positions = ref_trajectory[1]
+
+        total_frames = len(positions)
+        sim_cum_distances = [ 0 ]
+        ref_cum_distances = [ 0 ]
+
+        # compute the cumulative distances for the simulation and the reference
+        for i in range(1, total_frames):
+            sim_cum_distances[i] = sim_cum_distances[i - 1] + dist(positions[i - 1], positions[i])
+            ref_cum_distances[i] = ref_cum_distances[i - 1] + dist(reference_positions[i - 1], reference_positions[i])
+
+        sim_total_distance = sim_cum_distances[-1]
+        ref_total_distance = ref_cum_distances[-1]
+
+        # find at which (whole) simulation frame we've reached the same distance as the reference
+        reach_frame = -1
+        for i, distance in enumerate(sim_cum_distances):
+            if sum(sim_cum_distances[:i]) >= ref_total_distance:
+                reach_frame = i
+                break
+
+        r = 0.0
+        if reach_frame == -1:
+            # the simulation took longer to reach the same distance as the reference
+            # extrapolate the total (fraction) frames it would have taken to reach the same distance as the reference
+
+            r = total_frames * (sim_total_distance / ref_total_distance)
+        else:
+            # the simulation travelled more distance than the reference
+            # interpolate the (fraction) frame at which we've reached the same distance as the reference
+
+            reach_frame_distance = sum(sim_cum_distances)
+            over_distance = reach_frame_distance - ref_total_distance
+            over_distance_ratio = over_distance / sim_total_distance
+            over_distance_frame = reach_frame + over_distance_ratio * total_frames
+
+            r = over_distance_frame
+
+        # convert the distance difference to a fitness value
+        # total^2 - r^2 so that the fitness gets greater as the simulation gets better time-wise, with the goal of maximizing it
+        return total_frames * total_frames - r * r
+
     def _load_record(self, record_file):
         """
         Load the recorded data from the specified file
@@ -260,7 +319,7 @@ if __name__ == "__main__":
         
         pop = genetic_algorithm.create_population(trajectory[0], trajectory[1])
 
-        evolved_pop, fitnesses = asyncio.run(genetic_algorithm.evolve(pop, initial_state, iterations=5))
+        evolved_pop, fitnesses = asyncio.run(genetic_algorithm.evolve(pop, trajectory, iterations=5))
 
         z = zip(evolved_pop, fitnesses)
         best = sorted(z, key=lambda x: x[1], reverse=True)[0]
