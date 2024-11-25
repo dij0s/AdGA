@@ -9,4 +9,4 @@
 source ~/.venv/bin/activate
 
 # Run the Python script with the task ID
-mpirun -np 36  python optimize_trajectory_slurm.py
+mpirun -np 36 python optimize_trajectory_slurm.py --trajectories-file records/record_241119111936.npz --population-size 40 --elite-size 8 --mutation-rate 0.2 --iterations 15 -o best_%A.npz
