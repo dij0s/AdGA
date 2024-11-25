@@ -79,7 +79,7 @@ def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="AdGA")
     parser.add_argument("--population-size", "-p", type=int, default=10, help="Population size (number of individuals in each generation)")
-    parser.add_argument("--elite_size", "-e", type=int, default=2, help="Elite size (number of top individuals to keep)")
+    parser.add_argument("--elite-size", "-e", type=int, default=2, help="Elite size (number of top individuals to keep)")
     parser.add_argument("--mutation-rate", "-m", type=float, default=0.1, help="Mutation rate (probability of mutation)")
     parser.add_argument("--iterations", "-i", type=int, default=5, help="Number of iterations to run the genetic algorithm")
     parser.add_argument("--output-file", "-o", type=str, default="best_trajectory.npz", help="Output file name")
