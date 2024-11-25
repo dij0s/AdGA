@@ -177,8 +177,9 @@ class GAManager():
         From a sequence of controls, simulate the car and return the position at each frame
         """
 
-        if controls in self.sim_memo:
-            print(f"Found memoized simulation for controls {controls}")
+        controls_hash = hash(str(controls))
+        if controls_hash in self.sim_memo:
+            print(f"Found memoized simulation for controls {controls_hash}")
             return self.sim_memo[controls]
 
         endpoint = "http://192.168.88.248:30308/api/simulate"
@@ -190,7 +191,6 @@ class GAManager():
             "init_rotation": init_state["init_rotation"],
         }
 
-        controls_hash = hash(str(controls))
         start_time = time.time()
         print(f"Sending request for controls {controls_hash} ...")
 
@@ -203,7 +203,7 @@ class GAManager():
                         print(f"Received response for controls {controls_hash} in {end_time:.2f} seconds after {retry} retries")
                         
                         result = list(zip(controls, positions))
-                        self.sim_memo[controls] = result
+                        self.sim_memo[controls_hash] = result
 
                         return result
             except Exception as e:
