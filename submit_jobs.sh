@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=ga_optimization
-#SBATCH --output=ga_optimization_%A_%a.out
-#SBATCH --error=ga_optimization_%A_%a.err
-#SBATCH --nodelist=calypso[3]             
+#SBATCH --output=logs/ga_optimization_%A.out
+#SBATCH --error=logs/ga_optimization_%A.err
+#SBATCH --nodelist=calypso[0]             
 #SBATCH --nodes=1                             
 #SBATCH --tasks=36                          
 
