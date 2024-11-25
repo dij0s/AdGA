@@ -189,6 +189,10 @@ class GAManager():
             try: 
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(35)) as session:
                     async with session.post(endpoint, json=data) as response:
+                        if response.status != 200:
+                            print(f"Received response for controls {controls_hash} with status {response.status} with body {await response.text()}")
+                            raise aiohttp.ClientResponseError(response.request_info, response.history, status=response.status, message=response.reason)
+
                         positions = await response.json()
                         end_time = time.time() - start_time
                         print(f"Received response for controls {controls_hash} in {end_time:.2f} seconds after {retry} retries")
