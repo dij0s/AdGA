@@ -15,11 +15,13 @@ def run_simulation(fake_controls, init_pos, init_speed, init_rotation, simulatio
     # Run Ursina and PyQt within this process
     from ursina import Ursina
 
+
     # Initialize the Ursina and PyQt applications
     ursina_app = Ursina(size=(320, 256))
+    kill_ursina = lambda _: ursina_app.destroy()
 
     # Start the simulator
-    simulation = Simulator(fake_controls, init_pos, init_speed, init_rotation, simulation_queue)
+    simulation = Simulator(fake_controls, init_pos, init_speed, init_rotation, simulation_queue, kill_ursina)
     simulation.start()
 
     # Run Ursina event loop

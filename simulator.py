@@ -10,7 +10,7 @@ class Simulator:
     on a car instance through
     the network
     """
-    def __init__(self, controls, init_position, init_speed, init_rotation, simulation_queue):
+    def __init__(self, controls, init_position, init_speed, init_rotation, simulation_queue, ursina_callback):
         # TODO: Add init_speed
         super().__init__()
 
@@ -20,6 +20,7 @@ class Simulator:
         self._init_rotation = init_rotation 
         self.simulation_queue = simulation_queue
         self._recorded_data = []
+        self._ursina_callback = ursina_callback
 
         # setup backend
         self._setup_server()
@@ -84,6 +85,7 @@ class Simulator:
             self.running = False
             self.network_interface.close()
             self.simulation_queue.put(self._recorded_data)
+            self._ursina_callback()
 
     def _send_command(self, direction, start):
         command_types = ["release", "push"]
