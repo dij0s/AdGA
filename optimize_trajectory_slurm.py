@@ -31,15 +31,10 @@ def main():
         return
 
     trajectory = trajectories[rank]
-    initial_state = {
-        "init_pos": trajectory[1][0],
-        "init_speed": trajectory[2][0],
-        "init_rotation": trajectory[3][0],
-    }
 
     pop = genetic_algorithm.create_population(trajectory[0], trajectory[1])
 
-    evolved_pop, fitnesses = asyncio.run(genetic_algorithm.evolve(pop, initial_state, iterations=5))
+    evolved_pop, fitnesses = asyncio.run(genetic_algorithm.evolve(pop, trajectory, iterations=5))
 
     z = zip(evolved_pop, fitnesses)
     best = sorted(z, key=lambda x: x[1], reverse=True)[0]
