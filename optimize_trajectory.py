@@ -315,7 +315,7 @@ if __name__ == "__main__":
     trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241119111936.npz")
 
     time_before = time.time()
-    for trajectory in trajectories[:1]:
+    for trajectory in trajectories[:4]:
         initial_state = {
             "init_pos": trajectory[1][0],
             "init_speed": trajectory[2][0],
