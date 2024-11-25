@@ -171,7 +171,7 @@ class GAManager():
         controls_hash = hash(str(controls))
         if controls_hash in self.sim_memo:
             print(f"Found memoized simulation for controls {controls_hash}")
-            return self.sim_memo[controls]
+            return self.sim_memo[controls_hash]
 
         endpoint = "http://192.168.88.248:30308/api/simulate"
 
@@ -190,7 +190,7 @@ class GAManager():
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(35)) as session:
                     async with session.post(endpoint, json=data) as response:
                         if response.status != 200:
-                            print(f"Received response for controls {controls_hash} with status {response.status} with body {await response.text()}")
+                            print(f"HTTP error received for {controls_hash} with status {response.status} with body {await response.text()}")
                             raise aiohttp.ClientResponseError(response.request_info, response.history, status=response.status, message=response.reason)
 
                         positions = await response.json()
