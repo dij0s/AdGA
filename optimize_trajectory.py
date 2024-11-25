@@ -1,3 +1,4 @@
+import collections
 from datetime import datetime
 import math
 import pickle, lzma
@@ -38,6 +39,7 @@ class GAManager():
         self.elite_size = elite_size
         self.mutation_rate = mutation_rate
         self.elite_percentage = elite_size / population_size
+        self.sim_memo = {}
 
 
     def split_recording_into_trajectories(self, record_file):
@@ -121,6 +123,15 @@ class GAManager():
 
                 population.append(child)
 
+            # Check for duplicates in the population
+            while len(list(set(population))) < len(population):
+                print(f"Found duplicates in population {pop_hash}, removing and mutating them")
+                # find the duplicates
+                duplicates = [item for item, count in collections.Counter(population).items() if count > 1]
+                for duplicate in duplicates:
+                    population.remove(duplicate)
+                    population.append(self._mutate(duplicate, 0.1))
+
         return population, fitnesses
 
     def tournament_selection(self, population, fitnesses, k=2):
@@ -166,6 +177,10 @@ class GAManager():
         From a sequence of controls, simulate the car and return the position at each frame
         """
 
+        if controls in self.sim_memo:
+            print(f"Found memoized simulation for controls {controls}")
+            return self.sim_memo[controls]
+
         endpoint = "http://192.168.88.248:30308/api/simulate"
 
         data = {
@@ -186,8 +201,11 @@ class GAManager():
                         positions = await response.json()
                         end_time = time.time() - start_time
                         print(f"Received response for controls {controls_hash} in {end_time:.2f} seconds after {retry} retries")
-                        #print(f"Received response: {positions} for controls {controls}")
-                        return list(zip(controls, positions))
+                        
+                        result = list(zip(controls, positions))
+                        self.sim_memo[controls] = result
+
+                        return result
             except Exception as e:
                 print(f"Attempt {retry+ 1} failed for controls {controls_hash}: {e}")
                 #print(traceback.format_exc())
