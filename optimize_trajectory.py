@@ -91,7 +91,7 @@ class GAManager():
         print(f"Starting evolution for population {pop_hash}, {len(population)} individuals, {iterations} iterations")
 
         for _ in range(iterations):
-            print(f"Starting iteration {_}/{iterations} for population {pop_hash}")
+            print(f"Starting iteration {_ + 1}/{iterations} for population {pop_hash}")
 
             # Simulate the population to get the positions
             simulation_results = await asyncio.gather(
