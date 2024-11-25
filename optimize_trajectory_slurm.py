@@ -21,6 +21,8 @@ def main():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
+    start_time = time.time()
+
     print(f"Starting rank {rank}/{size-1}")
     print(f"There are {len(trajectories)} trajectories")
 
@@ -61,6 +63,7 @@ def main():
     if rank == 0:
         recvbuf = recvbuf.reshape(size, -1)  # Each row corresponds to one process's data
         np.savez("best_trajectory.npz", recvbuf)
+        print(f"Time taken: {time.time() - start_time:.2f} seconds")
 
     MPI.Finalize()
 
