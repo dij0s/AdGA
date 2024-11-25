@@ -293,9 +293,14 @@ class GAManager():
             # the simulation travelled more distance than the reference
             # interpolate the (fraction) frame at which we've reached the same distance as the reference
 
+            if sim_total_distance == 0:
+                print("FUCK")
+                print(sim_cum_distances)
+                print(positions)
+
             reach_frame_distance = sum(sim_cum_distances)
             over_distance = reach_frame_distance - ref_total_distance
-            over_distance_ratio = over_distance / sim_total_distance
+            over_distance_ratio = 1 if sim_total_distance == 0 else over_distance / sim_total_distance
             over_distance_frame = reach_frame + over_distance_ratio * total_frames
 
             r = over_distance_frame
