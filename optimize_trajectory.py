@@ -207,7 +207,7 @@ class GAManager():
                 if isinstance(e, aiohttp.ClientResponseError):
                     print(f"HTTP error {e.status}: {e.message}")
                     if e.status == 500:
-                        error_details = await e.response.text()
+                        error_details = e.message
                         print(f"Error details: {error_details}")
                 if retry == retries - 1:
                     raise
