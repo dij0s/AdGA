@@ -181,7 +181,7 @@ class GAManager():
 
         for retry in range(retries):
             try: 
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(20)) as session:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(35)) as session:
                     async with session.post(endpoint, json=data) as response:
                         positions = await response.json()
                         end_time = time.time() - start_time
@@ -198,6 +198,7 @@ class GAManager():
                         print(f"Error details: {error_details}")
                 if retry == retries - 1:
                     raise
+                random_offset = randint(500, 5000) / 1000
                 await asyncio.sleep(2 ** min(4, retry))  # Exponential backoff, with a maximum of 16 seconds
 
 
