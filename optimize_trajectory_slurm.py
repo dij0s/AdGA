@@ -1,3 +1,4 @@
+from datetime import datetime
 import sys
 import time
 import numpy as np
@@ -5,6 +6,10 @@ from optimize_trajectory import GAManager
 from mpi4py import MPI
 import asyncio
 import aiohttp
+
+_print = print
+def print(*args, **kwargs):
+    _print("[%s]" % (datetime.now()),*args, **kwargs)
 
 def main():
     genetic_algorithm = GAManager(population_size=10, elite_size=2, mutation_rate=0.1)

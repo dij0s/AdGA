@@ -1,3 +1,4 @@
+from datetime import datetime
 import math
 import pickle, lzma
 
@@ -13,6 +14,10 @@ import asyncio
 import aiohttp
 
 import traceback
+
+_print = print
+def print(*args, **kwargs):
+    _print("[%s]" % (datetime.now()),*args, **kwargs)
 
 class GAManager():
     """
@@ -81,6 +86,7 @@ class GAManager():
         }
 
         pop_hash = hash(str(population))
+        print(f"Starting evolution for population {pop_hash}, {len(population)} individuals, {iterations} iterations")
 
         for _ in range(iterations):
             print(f"Starting iteration {_}/{iterations} for population {pop_hash}")
@@ -171,7 +177,7 @@ class GAManager():
 
         controls_hash = hash(str(controls))
         start_time = time.time()
-        print("Sending request for controls {controls_hash} ...")
+        print(f"Sending request for controls {controls_hash} ...")
 
         for retry in range(retries):
             try: 
@@ -179,12 +185,12 @@ class GAManager():
                     async with session.post(endpoint, json=data) as response:
                         positions = await response.json()
                         end_time = time.time() - start_time
-                        print("Received response for controls {controls_hash} in {end_time} seconds after {retry + 1} retries")
+                        print(f"Received response for controls {controls_hash} in {end_time:.2f} seconds after {retry} retries")
                         #print(f"Received response: {positions} for controls {controls}")
                         return list(zip(controls, positions))
             except Exception as e:
-                print(f"Attempt {retry+ 1} failed: {e}")
-                print(traceback.format_exc())
+                print(f"Attempt {retry+ 1} failed for controls {controls_hash}: {e}")
+                #print(traceback.format_exc())
                 if isinstance(e, aiohttp.ClientResponseError):
                     print(f"HTTP error {e.status}: {e.message}")
                     if e.status == 500:
@@ -192,7 +198,7 @@ class GAManager():
                         print(f"Error details: {error_details}")
                 if retry == retries - 1:
                     raise
-                await asyncio.sleep(2 ** max(4, retry))  # Exponential backoff
+                await asyncio.sleep(2 ** min(4, retry))  # Exponential backoff, with a maximum of 16 seconds
 
 
     def _one_point_crossover(self, controls1, controls2):
@@ -249,8 +255,8 @@ class GAManager():
         reference_positions = ref_trajectory[1]
 
         total_frames = len(positions)
-        sim_cum_distances = [ 0 ]
-        ref_cum_distances = [ 0 ]
+        sim_cum_distances = [ 0 ] * total_frames 
+        ref_cum_distances = [ 0 ] * total_frames
 
         # compute the cumulative distances for the simulation and the reference
         for i in range(1, total_frames):
@@ -302,7 +308,6 @@ class GAManager():
 
 
 if __name__ == "__main__":
-    print("optimize_trajectory.py")
     start_time = time.time()
 
     genetic_algorithm = GAManager(population_size=10, elite_size=2, mutation_rate=0.1)
