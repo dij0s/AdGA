@@ -8,5 +8,7 @@
 
 source ~/.venv/bin/activate
 
+JOB_ID=$SLURM_JOB_ID
+
 # Run the Python script with the task ID
-mpirun -np 36 python optimize_trajectory_slurm.py --trajectories-file records/record_241119111936.npz --population-size 40 --elite-size 8 --mutation-rate 0.2 --iterations 15 -o best_%A.npz
+mpirun -np 36 python optimize_trajectory_slurm.py --trajectories-file records/record_241119111936.npz --population-size 40 --elite-size 8 --mutation-rate 0.2 --iterations 15 -o best_${JOB_ID}.npz
