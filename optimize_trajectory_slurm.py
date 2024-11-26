@@ -12,7 +12,9 @@ _print = print
 def print(*args, **kwargs):
     _print("[%s]" % (datetime.now()),*args, **kwargs)
 
-def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1, iterations=5, output_file="best_trajectory.npz"):
+def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1, iterations=5, output_file="best_trajectory.npz",
+         split_window_size=10, split_overlap=5):
+
     if trajectories_file is None:
         print("Gimme a trajectory file, bro")
         return
@@ -22,7 +24,7 @@ def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1,
     genetic_algorithm = GAManager(population_size=population_size, elite_size=elite_size, mutation_rate=mutation_rate)
 
     # Split the recording into trajectories
-    trajectories = genetic_algorithm.split_recording_into_trajectories(trajectories_file)
+    trajectories = genetic_algorithm.split_recording_into_trajectories(trajectories_file, split_window_size, split_overlap)
 
     print(f"Loaded {len(trajectories)} trajectories from {trajectories_file}")
 
@@ -84,6 +86,8 @@ if __name__ == "__main__":
     parser.add_argument("--iterations", "-i", type=int, default=5, help="Number of iterations to run the genetic algorithm")
     parser.add_argument("--output-file", "-o", type=str, default="best_trajectory.npz", help="Output file name")
     parser.add_argument("--trajectories-file", "-t", type=str, help="Input trajectories records file name", required=True)
+    parser.add_argument("--split-window-size", "-w", type=int, default=10, help="Size of each sub-trajectory to split the trajectories")
+    parser.add_argument("--split-overlap", "-s", type=int, default=5, help="Overlap of sub-trajectories")
     args = parser.parse_args()
 
     main(
@@ -92,5 +96,7 @@ if __name__ == "__main__":
         elite_size=args.elite_size,
         mutation_rate=args.mutation_rate,
         iterations=args.iterations,
-        output_file=args.output_file
+        output_file=args.output_file,
+        split_window_size=args.split_window_size,
+        split_overlap=args.split_overlap
     )

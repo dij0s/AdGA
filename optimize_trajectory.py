@@ -42,7 +42,7 @@ class GAManager():
         self.sim_memo = {}
 
 
-    def split_recording_into_trajectories(self, record_file):
+    def split_recording_into_trajectories(self, record_file, split_window_size=10, split_overlap=4):
         """
         From the specified record file, split the data into individual trajectories
         of frames_per_trajectory frames
@@ -56,10 +56,10 @@ class GAManager():
         positions = [(x, 0, y) for x, y in positions]
 
         # split the data into individual trajectories
-        controls = self.split_to_subarrays(controls, self.frames_per_trajectory)
-        positions = self.split_to_subarrays(positions, self.frames_per_trajectory)
-        speeds = self.split_to_subarrays(speed, self.frames_per_trajectory)
-        angles = self.split_to_subarrays(angle, self.frames_per_trajectory)
+        controls = self.split_to_subarrays(controls, self.frames_per_trajectory, window_size=split_window_size, overlap=split_overlap)
+        positions = self.split_to_subarrays(positions, self.frames_per_trajectory, window_size=split_window_size, overlap=split_overlap)
+        speeds = self.split_to_subarrays(speed, self.frames_per_trajectory, window_size=split_window_size, overlap=split_overlap)
+        angles = self.split_to_subarrays(angle, self.frames_per_trajectory, window_size=split_window_size, overlap=split_overlap)
 
         return list(zip(controls, positions, speeds, angles))
 
