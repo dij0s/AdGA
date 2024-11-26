@@ -21,7 +21,7 @@ def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1,
 
     print(f"Running with population_size={population_size}, elite_size={elite_size}, mutation_rate={mutation_rate}, iterations={iterations}, output_file={output_file}")
 
-    genetic_algorithm = GAManager(population_size=population_size, elite_size=elite_size, mutation_rate=mutation_rate)
+    genetic_algorithm = GAManager(population_size=population_size, elite_size=elite_size, mutation_rate=mutation_rate, frames_per_trajectory=split_window_size)
 
     # Split the recording into trajectories
     trajectories = genetic_algorithm.split_recording_into_trajectories(trajectories_file, split_window_size, split_overlap)

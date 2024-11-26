@@ -56,10 +56,10 @@ class GAManager():
         positions = [(x, 0, y) for x, y in positions]
 
         # split the data into individual trajectories
-        controls = self.split_to_subarrays(controls, self.frames_per_trajectory, window_size=split_window_size, overlap=split_overlap)
-        positions = self.split_to_subarrays(positions, self.frames_per_trajectory, window_size=split_window_size, overlap=split_overlap)
-        speeds = self.split_to_subarrays(speed, self.frames_per_trajectory, window_size=split_window_size, overlap=split_overlap)
-        angles = self.split_to_subarrays(angle, self.frames_per_trajectory, window_size=split_window_size, overlap=split_overlap)
+        controls = self.split_to_subarrays(controls, window_size=split_window_size, overlap=split_overlap)
+        positions = self.split_to_subarrays(positions, window_size=split_window_size, overlap=split_overlap)
+        speeds = self.split_to_subarrays(speed, window_size=split_window_size, overlap=split_overlap)
+        angles = self.split_to_subarrays(angle, window_size=split_window_size, overlap=split_overlap)
 
         return list(zip(controls, positions, speeds, angles))
 
@@ -331,7 +331,7 @@ if __name__ == "__main__":
 
     genetic_algorithm = GAManager(population_size=10, elite_size=2, mutation_rate=0.1)
 
-    trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241119111936.npz")
+    trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241119111936.npz", split_window_size=10, split_overlap=5)
 
     time_before = time.time()
     for trajectory in trajectories[:4]:
