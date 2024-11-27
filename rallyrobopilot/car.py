@@ -36,6 +36,7 @@ class Car(Entity):
         self.friction = friction
         self.turning_speed = 5
         self.pivot_rotation_distance = 1
+        self.collision_counter = 0
 
         self.reset_position = (0, 0, 0)
         self.reset_rotation = (0, 0, 0)
@@ -71,7 +72,7 @@ class Car(Entity):
         self.trail_renderer2 = TrailRenderer(parent = self.particle_pivot, position = (-0.8, -0.2, 0), color = color.black, alpha = 0, thickness = 7, length = 200)
         self.trail_renderer3 = TrailRenderer(parent = self.trail_pivot, position = (0.8, -0.2, 0), color = color.black, alpha = 0, thickness = 7, length = 200)
         self.trail_renderer4 = TrailRenderer(parent = self.trail_pivot, position = (-0.8, -0.2, 0), color = color.black, alpha = 0, thickness = 7, length = 200)
-        
+
         self.trails = [self.trail_renderer1, self.trail_renderer2, self.trail_renderer3, self.trail_renderer4]
         self.start_trail = True
 
@@ -95,7 +96,7 @@ class Car(Entity):
 
         self.laps_text = Text(text = "", origin = (0, 0), size = 0.05, scale = (1.1, 1.1), position = (0, 0.43))
         self.reset_count_timer = Text(text = str(round(self.reset_count, 1)), origin = (0, 0), size = 0.05, scale = (1, 1), position = (-0.7, 0.43))
-        
+
         self.timer.disable()
 
         self.laps_text.disable()
@@ -249,7 +250,7 @@ class Car(Entity):
             self.rotation_speed = self.max_rotation_speed
         if self.rotation_speed <= -self.max_rotation_speed:
             self.rotation_speed = -self.max_rotation_speed
-            
+
         # Cap the camera rotation
         if self.camera_rotation >= 40:
             self.camera_rotation = 40
@@ -356,6 +357,8 @@ class Car(Entity):
 
             #   Detect collision
             if front_collision.distance < self.scale_x + distance_to_travel:
+                self.collision_counter += 1
+
                 free_dist = front_collision.distance - self.scale_x + distance_to_travel
 
                 #   cancel speed going directly into the obstacle
@@ -430,7 +433,7 @@ class Car(Entity):
         maxYB = entity.y + entity.scale_y - (entity.scale_y / 2)
         minZB = entity.z - entity.scale_z + (entity.scale_z / 2)
         maxZB = entity.z + entity.scale_z - (entity.scale_z / 2)
-        
+
         return (
             (minXA <= maxXB and maxXA >= minXB) and
             (minYA <= maxYB and maxYA >= minYB) and
@@ -492,7 +495,7 @@ class CarUsername(Text):
             color = color.white,
             billboard = True
         )
-    
+
         self.username_text = "Guest"
 
     def update(self):

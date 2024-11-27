@@ -17,6 +17,7 @@ class SensingSnapshot:
         self.car_position = (0,0,0)
         self.car_speed = 0
         self.car_angle = 0
+        self.collision_counter = 0
         self.raycast_distances = [0]
         self.image = None
 
@@ -121,4 +122,3 @@ class NetworkDataCmdInterface:
         print("sensing_snapshot.car.position =", sensing_snapshot.car_position)
 
         imageio.imsave("last_image.png", sensing_snapshot.image)
-

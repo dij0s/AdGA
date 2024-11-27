@@ -54,7 +54,7 @@ class RemoteController(Entity):
         #         return jsonify({"status": "Command received"}), 200
         #     except Exception as e:
         #         return jsonify({"error": str(e)}), 500
-    
+
         # @flask_app.route('/sensing')
         # def get_sensing_route():
         #     return jsonify(self.get_sensing_data()), 200
@@ -77,6 +77,7 @@ class RemoteController(Entity):
             snapshot.car_position = self.car.world_position
             snapshot.car_speed = self.car.speed
             snapshot.car_angle = self.car.rotation_y
+            snapshot.collision_counter = self.car.collision_counter
             snapshot.raycast_distances = self.car.multiray_sensor.collect_sensor_values()
 
             #   Collect last rendered image
@@ -110,7 +111,7 @@ class RemoteController(Entity):
         raycast_distances = self.car.multiray_sensor.collect_sensor_values()
         return {'up': current_controls[0],
                 'down': current_controls[1],
-                'left': current_controls[2], 
+                'left': current_controls[2],
                 'right': current_controls[3],
                 'car_position x': car_position[0],
                 'car_position y': car_position[1],
@@ -151,7 +152,7 @@ class RemoteController(Entity):
                         held_keys['d'] = commands[0] == b'push'
                     elif commands[1] == b'left':
                         held_keys['a'] = commands[0] == b'push'
-                              
+
                 # Release all
                 if commands[0] == b'release' and commands[1] == b'all':
                     print("received release all command")
