@@ -206,6 +206,12 @@ class GAManager():
 
                             positions = await response.json()
 
+                            # TODO: This is stupid, we shouldn't receive an error as a string here, but something is broken 
+                            # and we already took three hours looking for it and we're tired so this will have to do for now
+                            if isinstance(positions, str):
+                                print(f"Received error for controls {controls_hash}: {positions}")
+                                raise Exception(positions)
+
                             end_time = time.time() - start_time
                             print(f"Received response for controls {controls_hash} in {end_time:.2f} seconds after {retry} retries")
                             
