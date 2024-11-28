@@ -260,7 +260,13 @@ class GAManager():
         """
 
         def dist(p1, p2):
-            return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+            try:
+                return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+            except:
+                print("GLOUPS")
+                print("p1", p1)
+                print("p2", p2)
+                raise
         
         return sum([dist(p1, p2) for (p1, p2) in more_itertools.pairwise(positions)])
 
