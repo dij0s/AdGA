@@ -27,7 +27,7 @@ class GAManager():
     autopilot's trajectory
     """
 
-    def __init__(self, frames_per_trajectory = 10, population_size = 100, elite_size = 20, mutation_rate = 0.1):
+    def __init__(self, frames_per_trajectory = 10, population_size = 100, elite_size = 20, mutation_rate = 0.1, max_concurrent_requests = 10):
         if frames_per_trajectory < 2:
             raise ValueError("frames_per_trajectory must be at least 2")
 
@@ -39,6 +39,7 @@ class GAManager():
         self.elite_size = elite_size
         self.mutation_rate = mutation_rate
         self.elite_percentage = elite_size / population_size
+        self.max_concurrent_requests = max_concurrent_requests
         self.sim_memo = {}
 
 
@@ -93,9 +94,12 @@ class GAManager():
         for _ in range(iterations):
             print(f"Starting iteration {_ + 1}/{iterations} for population {pop_hash}")
 
+            # create a semaphore to limit the number of concurrent requests
+            semaphore = asyncio.Semaphore(self.max_concurrent_requests)
+
             # Simulate the population to get the positions
             simulation_results = await asyncio.gather(
-                *[self._simulate([x for x, _ in individual], initial_state) for individual in population]
+                *[self._simulate([x for x, _ in individual], initial_state, semaphore) for individual in population]
             )
 
             positions = [
@@ -103,7 +107,8 @@ class GAManager():
                 for simulation_result in simulation_results
             ]
 
-            fitnesses = [self._fitness2(positions_seq, ref_trajectory) for positions_seq in positions]
+            fitnesses = [self._fitness(positions_seq) for positions_seq in positions]
+            #fitnesses = [self._fitness2(positions_seq, ref_trajectory) for positions_seq in positions]
 
             population = simulation_results
 
@@ -163,16 +168,14 @@ class GAManager():
 
         return [format_control(control) for control in controls]
 
-    async def _simulate(self, controls, init_state, retries=20):
+    async def _simulate(self, controls, init_state, semaphore, retries=20):
         """
         From a sequence of controls, simulate the car and return the position at each frame
         """
 
         controls_hash = hash(str(controls))
-        if controls_hash in self.sim_memo:
-            print(f"Found memoized simulation for controls {controls_hash}")
-            return self.sim_memo[controls_hash]
-
+        print("hash: ", controls_hash)
+    
         endpoint = "http://192.168.88.248:30308/api/simulate"
 
         data = {
@@ -182,37 +185,42 @@ class GAManager():
             "init_rotation": init_state["init_rotation"],
         }
 
-        start_time = time.time()
-        print(f"Sending request for controls {controls_hash} ...")
+        async with semaphore:
+            start_time = time.time()
 
-        for retry in range(retries):
-            try: 
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(35)) as session:
-                    async with session.post(endpoint, json=data) as response:
-                        if response.status != 200:
-                            print(f"HTTP error received for {controls_hash} with status {response.status} with body {await response.text()}")
-                            raise aiohttp.ClientResponseError(response.request_info, response.history, status=response.status, message=response.reason)
+            if controls_hash in self.sim_memo:
+                print(f"Found memoized simulation for controls {controls_hash}")
+                return self.sim_memo[controls_hash]       
 
-                        positions = await response.json()
-                        end_time = time.time() - start_time
-                        print(f"Received response for controls {controls_hash} in {end_time:.2f} seconds after {retry} retries")
-                        
-                        result = list(zip(controls, positions))
-                        self.sim_memo[controls_hash] = result
+            print(f"Sending request for controls {controls_hash} ...")
+            for retry in range(retries):
+                try: 
+                    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(35)) as session:
+                        async with session.post(endpoint, json=data) as response:
+                            if response.status != 200:
+                                print(f"HTTP error received for {controls_hash} with status {response.status} with body {await response.text()}")
+                                raise aiohttp.ClientResponseError(response.request_info, response.history, status=response.status, message=response.reason)
 
-                        return result
-            except Exception as e:
-                print(f"Attempt {retry+ 1} failed for controls {controls_hash}: {e}")
-                #print(traceback.format_exc())
-                if isinstance(e, aiohttp.ClientResponseError):
-                    print(f"HTTP error {e.status}: {e.message}")
-                    if e.status == 500:
-                        error_details = e.message
-                        print(f"Error details: {error_details}")
-                if retry == retries - 1:
-                    raise
-                random_offset = randint(500, 5000) / 1000
-                await asyncio.sleep(2 ** min(4, retry))  # Exponential backoff, with a maximum of 16 seconds
+                            positions = await response.json()
+                            end_time = time.time() - start_time
+                            print(f"Received response for controls {controls_hash} in {end_time:.2f} seconds after {retry} retries")
+                            
+                            result = list(zip(controls, positions))
+                            self.sim_memo[controls_hash] = result
+
+                            return result
+                except Exception as e:
+                    print(f"Attempt {retry+ 1} failed for controls {controls_hash}: {e}")
+                    #print(traceback.format_exc())
+                    if isinstance(e, aiohttp.ClientResponseError):
+                        print(f"HTTP error {e.status}: {e.message}")
+                        if e.status == 500:
+                            error_details = e.message
+                            print(f"Error details: {error_details}")
+                    if retry == retries - 1:
+                        raise
+                    random_offset = randint(500, 5000) / 1000
+                    await asyncio.sleep(2 ** min(4, retry))  # Exponential backoff, with a maximum of 16 seconds
 
 
     def _one_point_crossover(self, controls1, controls2):
@@ -329,7 +337,7 @@ class GAManager():
 if __name__ == "__main__":
     start_time = time.time()
 
-    genetic_algorithm = GAManager(population_size=10, elite_size=2, mutation_rate=0.1)
+    genetic_algorithm = GAManager(population_size=10, elite_size=2, mutation_rate=0.1, max_concurrent_requests=3)
 
     trajectories = genetic_algorithm.split_recording_into_trajectories("records/record_241119111936.npz", split_window_size=10, split_overlap=5)
 

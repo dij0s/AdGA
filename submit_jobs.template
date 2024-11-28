@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH --job-name=ga_optimization
+#SBATCH --output=logs/ga_optimization_%A.out
+#SBATCH --error=logs/ga_optimization_%A.err
+#SBATCH --nodelist=%%NODELIST%%        
+#SBATCH --nodes=%%N_NODES%%               
+#SBATCH --tasks=%%N_TASKS_PER_NODE%%                          
+
+source ~/.venv/bin/activate
+
+JOB_ID=$SLURM_JOB_ID
+#PODS_COUNT=$(kubectl get pods --no-headers -n isc3 |  awk '{print $1}'  | uniq -c | wc -l)
+#REQS_PER_POD=3
+
+# Run the Python script with the task ID
+mpirun -np %%N_TASKS%% python optimize_trajectory_slurm.py --trajectories-file records/record_241119111936.npz --population-size 20 --elite-size 8 --mutation-rate 0.2 --iterations 15 --max-concurrent-requests %%MAX_CONCURRENT_REQUESTS%% -o best_${JOB_ID}.npz

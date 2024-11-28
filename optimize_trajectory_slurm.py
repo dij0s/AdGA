@@ -13,7 +13,7 @@ def print(*args, **kwargs):
     _print("[%s]" % (datetime.now()),*args, **kwargs)
 
 def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1, iterations=5, output_file="best_trajectory.npz",
-         split_window_size=10, split_overlap=5):
+         split_window_size=10, split_overlap=5, max_concurrent_requests=10):
 
     if trajectories_file is None:
         print("Gimme a trajectory file, bro")
@@ -21,7 +21,13 @@ def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1,
 
     print(f"Running with population_size={population_size}, elite_size={elite_size}, mutation_rate={mutation_rate}, iterations={iterations}, output_file={output_file}")
 
-    genetic_algorithm = GAManager(population_size=population_size, elite_size=elite_size, mutation_rate=mutation_rate, frames_per_trajectory=split_window_size)
+    genetic_algorithm = GAManager(
+        population_size=population_size, 
+        elite_size=elite_size, 
+        mutation_rate=mutation_rate, 
+        frames_per_trajectory=split_window_size,
+        max_concurrent_requests=max_concurrent_requests
+    )
 
     # Split the recording into trajectories
     trajectories = genetic_algorithm.split_recording_into_trajectories(trajectories_file, split_window_size, split_overlap)
@@ -40,8 +46,7 @@ def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1,
     # Ensure the rank is within the range of trajectories
     if rank >= len(trajectories):
         print(f"Rank {rank} is out of range for the number of trajectories {len(trajectories)}")
-        MPI.COMM_WORLD.Abort(1)  
-        return
+        exit()
 
     trajectory = trajectories[rank]
 
@@ -88,6 +93,7 @@ if __name__ == "__main__":
     parser.add_argument("--trajectories-file", "-t", type=str, help="Input trajectories records file name", required=True)
     parser.add_argument("--split-window-size", "-w", type=int, default=10, help="Size of each sub-trajectory to split the trajectories")
     parser.add_argument("--split-overlap", "-s", type=int, default=5, help="Overlap of sub-trajectories")
+    parser.add_argument("--max-concurrent-requests", "-r", type=int, default=10, help="Maximum number of concurrent requests to the simulation server")
     args = parser.parse_args()
 
     main(
@@ -98,5 +104,6 @@ if __name__ == "__main__":
         iterations=args.iterations,
         output_file=args.output_file,
         split_window_size=args.split_window_size,
-        split_overlap=args.split_overlap
+        split_overlap=args.split_overlap,
+        max_concurrent_requests=args.max_concurrent_requests
     )
