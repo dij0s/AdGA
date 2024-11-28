@@ -102,6 +102,9 @@ class GAManager():
                 *[self._simulate([x for x, _ in individual], initial_state, semaphore) for individual in population]
             )
 
+            print("SIMULATION_RESULTS")
+            print(simulation_results)
+
             positions = [
                 [position for _, position in simulation_result]
                 for simulation_result in simulation_results
@@ -202,6 +205,7 @@ class GAManager():
                                 raise aiohttp.ClientResponseError(response.request_info, response.history, status=response.status, message=response.reason)
 
                             positions = await response.json()
+
                             end_time = time.time() - start_time
                             print(f"Received response for controls {controls_hash} in {end_time:.2f} seconds after {retry} retries")
                             
