@@ -12,20 +12,26 @@ app = Flask(__name__)
 simulation_queue = Queue()
 
 def run_simulation(fake_controls, init_pos, init_speed, init_rotation, simulation_queue):
-    # Run Ursina and PyQt within this process
-    from ursina import Ursina
+    try:
+        # Run Ursina and PyQt within this process
+        from ursina import Ursina
 
 
-    # Initialize the Ursina and PyQt applications
-    ursina_app = Ursina(size=(320, 256))
-    kill_ursina = lambda _: ursina_app.destroy()
+        # Initialize the Ursina and PyQt applications
+        ursina_app = Ursina(size=(320, 256))
+        kill_ursina = lambda _: ursina_app.destroy()
 
-    # Start the simulator
-    simulation = Simulator(fake_controls, init_pos, init_speed, init_rotation, simulation_queue, kill_ursina)
-    simulation.start()
+        # Start the simulator
+        simulation = Simulator(fake_controls, init_pos, init_speed, init_rotation, simulation_queue, kill_ursina)
+        simulation.start()
 
-    # Run Ursina event loop
-    ursina_app.run()
+        # Run Ursina event loop
+        ursina_app.run()
+    except Exception as e:
+        print("[PROCESS ERROR] /api/simulate/ - Failed to run the simulation")
+        print(e)
+
+        simulation_queue.put(str(e))
 
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
@@ -55,7 +61,8 @@ def simulate():
         # Check if the process is still alive - if not, respond with an error
         if not process.is_alive():
             print("[/api/simulate/] ERROR - Simulation process has exited unexpectedly (crashed or something)")
-            return jsonify({"error": "Simulation process has exited unexpectedly (crashed or something)"}), 500
+            e = simulation_queue.get()
+            return jsonify({"error": "Simulation process has exited unexpectedly (crashed or something)", "exception": e}), 500
 
     simulation_data = simulation_queue.get()
     process.kill()
