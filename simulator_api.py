@@ -66,6 +66,7 @@ def simulate():
     process.kill()
 
     print("[/api/simulate/] Simulation completed successfully")
+    print(f"[/api/simulate/] Returning simulation data: \n ===>{simulation_data}")
     return jsonify(simulation_data)
 
 if __name__ == '__main__':
