@@ -32,6 +32,7 @@ def run_simulation(fake_controls, init_pos, init_speed, init_rotation, simulatio
         print(e)
 
         simulation_queue.put(str(e))
+        exit(1)
 
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
@@ -58,8 +59,8 @@ def simulate():
     while simulation_queue.empty():
         time.sleep(1)
 
-        # Check if the process is still alive - if not, respond with an error
-        if not process.is_alive():
+        # Check if the process died and exited with an error
+        if not process.is_alive() and not simulation_queue.empty() and process.exitcode != 0:
             print("[/api/simulate/] ERROR - Simulation process has exited unexpectedly (crashed or something)")
             e = simulation_queue.get()
             return jsonify({"error": "Simulation process has exited unexpectedly (crashed or something)", "exception": e}), 500
