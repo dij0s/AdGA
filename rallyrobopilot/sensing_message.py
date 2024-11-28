@@ -92,6 +92,8 @@ class NetworkDataCmdInterface:
     def __init__(self, callback, address = "127.0.0.1", port = 7654):
         self.data = []
 
+        print("Connecting to ", address, ":", port)
+
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 125536)
         self.socket.connect((address, port))

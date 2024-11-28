@@ -36,7 +36,7 @@ class Simulator:
         print("[LOG] Starting network interface")
 
         # Create network interface
-        self.network_interface = NetworkDataCmdInterface(self._collect_data)
+        self.network_interface = NetworkDataCmdInterface(self._collect_data, port=self.controller.port)
         print("[LOG] Created network interface")
 
         # Simulate network message sending on a timed interval
@@ -59,7 +59,7 @@ class Simulator:
         car.sports_car()
         car.set_track(track)
 
-        RemoteController(car=car, connection_port=7654)
+        self.controller = RemoteController(car=car)
         
         car.visible = True
         car.enable()

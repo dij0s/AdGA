@@ -19,12 +19,12 @@ def printv(str):
         print(str)
 
 class RemoteController(Entity):
-    def __init__(self, car = None, connection_port = 7654, flask_app=None):
+    def __init__(self, car = None, flask_app=None):
         super().__init__()
 
         self.ip_address = "127.0.0.1"
-        self.port = connection_port
         self.car = car
+        self.port = None
 
         self.listen_socket = None
         self.connected_client = None
@@ -219,7 +219,8 @@ class RemoteController(Entity):
     def open_connection_socket(self):
         print("Waiting for connections")
         self.listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.listen_socket.bind((self.ip_address, self.port))
+        self.listen_socket.bind((self.ip_address, 0))
+        self.port = self.listen_socket.getsockname()[1]
         # self.listen_socket.setblocking(False)
         self.listen_socket.settimeout(0.01)
         self.listen_socket.listen()
