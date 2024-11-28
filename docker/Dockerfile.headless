@@ -12,7 +12,7 @@ EXPOSE 5000
 RUN apt-get update && \
     apt-get install -y xvfb x11-utils libgl1-mesa-dri && \
     rm -rf /var/lib/apt/lists/*
-  
+
 WORKDIR /usr/bin
 COPY xvfb-startup.sh .
 RUN chmod +x xvfb-startup.sh
@@ -39,11 +39,11 @@ RUN set -xe \
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.headless.txt
 RUN pip install python3_xlib
 
 # Setup as entrypoint to allow
-# for inline argument 
+# for inline argument
 # attention, script must not have
 # carriage returns
 CMD ["bash", "-c", "ls -lsa;./xvfb-startup.sh"]
