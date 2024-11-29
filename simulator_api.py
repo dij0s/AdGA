@@ -19,7 +19,7 @@ def run_simulation(fake_controls, init_pos, init_speed, init_rotation, simulatio
 
         # Initialize the Ursina and PyQt applications
         ursina_app = Ursina(size=(320, 256))
-        kill_ursina = lambda _: ursina_app.destroy()
+        kill_ursina = lambda: ursina_app.destroy()
 
         # Start the simulator
         simulation = Simulator(fake_controls, init_pos, init_speed, init_rotation, simulation_queue, kill_ursina)
@@ -41,7 +41,7 @@ def simulate():
     #     print("[ERROR] /api/simulate/ - Failed to communicate with the logger")
     #     print(e)
     #     return jsonify({"error": "Failed to communicate with the logger", "exception": e}), 500
-        
+
     data = request.get_json()
 
     controls = data['controls']
@@ -52,7 +52,7 @@ def simulate():
     # Start the simulation process
     process = Process(target=run_simulation, args=(controls, init_pos, init_speed, init_rotation, simulation_queue))
     process.start()
-    
+
     # Wait for something to be in the simulation queue
     while simulation_queue.empty():
         time.sleep(1)
