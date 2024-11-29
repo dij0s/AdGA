@@ -1,5 +1,8 @@
 import struct
 
+import socket
+import threading
+
 import numpy as np
 
 
@@ -17,7 +20,6 @@ class SensingSnapshot:
         self.car_position = (0,0,0)
         self.car_speed = 0
         self.car_angle = 0
-        self.collision_counter = 0
         self.raycast_distances = [0]
         self.image = None
 
@@ -70,7 +72,6 @@ class SensingSnapshotManager:
 
         return data
 
-
     def add_message_chunk(self, chunk):
         self.pending_data += chunk
 
@@ -87,38 +88,33 @@ class SensingSnapshotManager:
             self.pending_data = self.pending_data[sizeheader+message_size:]
 
 
-import socket
-import imageio
 class NetworkDataCmdInterface:
     def __init__(self, callback, address = "127.0.0.1", port = 7654):
         self.data = []
 
+        print("Connecting to ", address, ":", port)
+
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 125536)
         self.socket.connect((address, port))
-        # self.socket.setblocking(False)
         self.socket.settimeout(0.05)
 
         self.msg_mngr = SensingSnapshotManager(callback)
 
+    def send_msg(self):
+        try:
+            data = self.socket.recv(2**20)
+            self.msg_mngr.add_message_chunk(data)
+        except:
+            pass
+
     def send_cmd(self, cmd):
         self.socket.send(bytes(cmd, "utf-8"))
 
-    def recv_msg(self):
-        try:
-            while True:
-                data = self.socket.recv(2**20)
+    def send_command(self, direction, start):
+        command_types = ["release", "push"]
+        self.network_interface.send_cmd(command_types[start] + " " + direction+";")
 
-                if len(data) == 0:
-                    break
-
-                self.msg_mngr.add_message_chunk(data)
-
-        except Exception as e:
-            pass
-
-    def process_sensing_message(self, sensing_snapshot):
-        #   Sample function to use as a callback
-        print("sensing_snapshot.car.position =", sensing_snapshot.car_position)
-
-        imageio.imsave("last_image.png", sensing_snapshot.image)
+    def close(self):
+        self.socket.close()
+        del self.socket

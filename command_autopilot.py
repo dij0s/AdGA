@@ -46,33 +46,7 @@ class OsdNNMsgProcessor:
         self._directions = ["forward", "back", "left", "right"]
 
     def process_message(self, _, data_collector):
-        # check if controls
-        # of current rank
-        # are consumed
 
-        # queue is not consumed yet
-        # play control of current rank queue
-        current_controls_queue = lambda: self._per_rank_controls[self._current_rank]
-        if not current_controls_queue():
-            self._current_rank += 1
-            # retrieve rank setup
-            # as current
-
-            # check if all ranks are consumed
-            if self._current_rank > self._max_rank:
-                print("All ranks are consumed. must end here.")
-
-        current_command = current_controls_queue().popleft()
-
-        # map command to remote instruction
-        for command, start in (
-            map(
-                lambda ic: (self._directions[ic[0]], ic[1]),
-                enumerate(current_command)
-            )):
-            # run each command in
-            # controls queue
-            data_collector.onCarControlled(command, start)
 
 if  __name__ == "__main__":
     import sys

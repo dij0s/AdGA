@@ -1,7 +1,6 @@
 import time
 import threading
 from rallyrobopilot import *
-from collections import deque
 from math import sqrt
 
 class Simulator:
@@ -10,15 +9,17 @@ class Simulator:
     on a car instance through
     the network
     """
-    def __init__(self, controls_per_rank, init_positions_per_rank, init_rotations_per_rank, simulation_queue):
+    def __init__(self, controls, init_position, init_speed, init_rotation, simulation_queue, ursina_callback):
         # TODO: Add init_speed
         super().__init__()
 
-        self._controls_per_rank = controls_per_rank
-        self._init_positions_per_rank = init_positions_per_rank
-        self._init_rotation_per_rank = init_rotations_per_rank
-        self.simulation_queue = simulation_queue
+        self._controls = controls
+        self._init_position = init_position
+        self._init_speed = init_speed
+        self._init_rotation = init_rotation
+        self._simulation_queue = simulation_queue
         self._recorded_data = []
+        self._ursina_callback = ursina_callback
 
         # setup backend
         self._setup_server()
@@ -52,12 +53,14 @@ class Simulator:
     def _setup_server(self):
         # Setup track and car
         track = Track("rallyrobopilot/assets/SimpleTrack/track_metadata.json")
+        print("[LOG] Loaded track metadata")
 
         car = Car(position=self._init_position, speed=self._init_speed, rotation=(0, self._init_rotation, 0))
         car.sports_car()
         car.set_track(track)
 
         RemoteController(car=car, connection_port=7654)
+        print("[LOG] Created remote controller (listening socket)")
 
         car.visible = True
         car.enable()
@@ -82,7 +85,8 @@ class Simulator:
             # Stop the network loop and clean up
             self.running = False
             self.network_interface.close()
-            self.simulation_queue.put(self._recorded_data)
+            self._simulation_queue.put(self._recorded_data)
+            self._ursina_callback()
 
     def _send_command(self, direction, start):
         command_types = ["release", "push"]
