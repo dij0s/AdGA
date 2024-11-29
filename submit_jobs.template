@@ -4,7 +4,7 @@
 #SBATCH --error=logs/ga_optimization_%A.err
 #SBATCH --nodelist=%%NODELIST%%        
 #SBATCH --nodes=%%N_NODES%%               
-#SBATCH --tasks=%%N_TASKS_PER_NODE%%                          
+#SBATCH --tasks=%%N_TASKS%%                          
 
 source ~/.venv/bin/activate
 
@@ -13,4 +13,4 @@ JOB_ID=$SLURM_JOB_ID
 #REQS_PER_POD=3
 
 # Run the Python script with the task ID
-mpirun -np %%N_TASKS%% python optimize_trajectory_slurm.py --trajectories-file records/record_241119111936.npz --population-size 20 --elite-size 8 --mutation-rate 0.2 --iterations 15 --max-concurrent-requests %%MAX_CONCURRENT_REQUESTS%% -o best_${JOB_ID}.npz
+mpirun -np %%N_TASKS%% python optimize_trajectory_slurm.py --trajectories-file %%TRAJECTORIES_FILE%% --population-size %%POPULATION_SIZE%% --elite-size %%ELITE_SIZE%% --mutation-rate %%MUTATION_RATE%% --iterations %%ITERATIONS%% --max-concurrent-requests %%MAX_CONCURRENT_REQUESTS%% --split-window-size %%SPLIT_WINDOW_SIZE%% --split-overlap %%SPLIT_OVERLAP%% -o best_${JOB_ID}.npz
