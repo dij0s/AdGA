@@ -106,7 +106,7 @@ class GAManager():
             print(simulation_results)
 
             positions = [
-                [record["position"] for _, record in simulation_result]
+                [record["car_position"] for _, record in simulation_result]
                 for simulation_result in simulation_results
             ]
 

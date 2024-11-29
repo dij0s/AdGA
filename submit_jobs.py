@@ -26,7 +26,7 @@ pods_count = int(result.stdout.strip())
 
 genetic_algorithm = GAManager()
 trajectories = genetic_algorithm.split_recording_into_trajectories(
-    trajectories_file=trajectories_file,
+    trajectories_file,
     split_window_size=split_window_size,
     split_overlap=split_overlap
 )

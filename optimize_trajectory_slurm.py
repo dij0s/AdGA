@@ -59,9 +59,16 @@ def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1,
 
     best_trajectory = best[0]
 
+    def flatten_records(rec):
+        return [
+            rec["car_speed"],
+            *rec["car_position"],
+            rec["car_angle"]
+        ]
+
     flattened_trajectory = np.array([
-        (rank, *state, *metrics)  # Combine the tuple and the list into a single flat list
-        for state, metrics in best_trajectory
+        (rank, *controls, *flatten_records(records))  # Combine the controls and 
+        for controls, records in best_trajectory
     ], dtype=np.float32)
 
     print("Found best trajectory: ", best_trajectory)
