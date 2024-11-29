@@ -111,8 +111,8 @@ class GAManager():
                 for simulation_result in simulation_results
             ]
 
-            fitnesses = [self._fitness(positions_seq) for positions_seq in positions]
-            #fitnesses = [self._fitness2(positions_seq, ref_trajectory) for positions_seq in positions]
+            #fitnesses = [self._fitness(positions_seq) for positions_seq in positions]
+            fitnesses = [self._fitness2(positions_seq, ref_trajectory) for positions_seq in positions]
             best_fitnesses.append(max(fitnesses))
 
             population = simulation_results

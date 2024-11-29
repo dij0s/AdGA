@@ -67,15 +67,15 @@ def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1,
         ]
 
     flattened_trajectory = np.array([
-        (rank, *controls, *flatten_records(records))  # Combine the controls and 
+        (rank, *controls, *flatten_records(records))  # Combine the rank, controls and car readings into one float array 
         for controls, records in best_trajectory
     ], dtype=np.float32)
 
     print("Found best trajectory: ", best_trajectory)
     t_sendbuf_size = flattened_trajectory.size
-    f_sendbuf_size = best_fitnesses.size
+    f_sendbuf_size = len(best_fitnesses)
     t_sendbuf = flattened_trajectory.flatten()
-    f_sendbuf = best_fitnesses.flatten()
+    f_sendbuf = np.array(best_fitnesses, dtype=np.float32)
     t_recvbuf = None
     f_recvbuf = None
 
@@ -95,6 +95,21 @@ def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1,
         f_recvbuf = f_recvbuf.reshape(size, -1) # Each row corresponds to one process's data
         for i, f in enumerate(f_recvbuf):
             print(f"Trajectory {i}: {f}")
+
+        min_fitnesses = np.min(f_recvbuf, axis=0)
+        max_fitnesses = np.max(f_recvbuf, axis=0)
+        avg_fitnesses = np.mean(f_recvbuf, axis=0)
+
+        # plot the fitnesses, with the average as a line and the min/max as a shaded region
+        import matplotlib.pyplot as plt
+        plt.plot(avg_fitnesses, label="Average")
+        plt.fill_between(range(len(avg_fitnesses)), min_fitnesses, max_fitnesses, alpha=0.5, label="Min/Max")
+        plt.legend()
+        plt.xlabel("Generation")
+        plt.ylabel("Fitness")
+        plt.title("Fitness over time")
+
+        plt.savefig("fitness_plot.png")
 
 
     MPI.Finalize()
