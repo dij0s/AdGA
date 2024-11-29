@@ -78,7 +78,15 @@ class Simulator:
                 self._send_command(command, start)
         else:
             print("[LOG] No controls left")
-            self._recorded_data = [sensor.car_position for sensor in self._recorded_data[1:]]
+
+            self._recorded_data = [
+                {
+                    "car_position": sensor.car_position,
+                    "car_speed": sensor.car_speed,
+                    "car_angle": sensor.car_angle,
+                } for sensor in self._recorded_data[1:]
+            ]
+
             print(f"[LOG] Received a total of {len(self._recorded_data)} sensor messages")
 
             # Stop the network loop and clean up

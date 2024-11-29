@@ -106,7 +106,7 @@ class GAManager():
             print(simulation_results)
 
             positions = [
-                [position for _, position in simulation_result]
+                [record["position"] for _, record in simulation_result]
                 for simulation_result in simulation_results
             ]
 
@@ -188,6 +188,10 @@ class GAManager():
             "init_rotation": init_state["init_rotation"],
         }
 
+        headers = {
+            "Connection": "close",
+        }
+
         async with semaphore:
             start_time = time.time()
 
@@ -199,23 +203,23 @@ class GAManager():
             for retry in range(retries):
                 try: 
                     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(35)) as session:
-                        async with session.post(endpoint, json=data) as response:
+                        async with session.post(endpoint, json=data, headers=headers) as response:
                             if response.status != 200:
                                 print(f"HTTP error received for {controls_hash} with status {response.status} with body {await response.text()}")
                                 raise aiohttp.ClientResponseError(response.request_info, response.history, status=response.status, message=response.reason)
 
-                            positions = await response.json()
+                            sensing = await response.json()
 
                             # TODO: This is stupid, we shouldn't receive an error as a string here, but something is broken 
                             # and we already took three hours looking for it and we're tired so this will have to do for now
-                            if isinstance(positions, str):
-                                print(f"Received error for controls {controls_hash}: {positions}")
-                                raise Exception(positions)
+                            if isinstance(sensing, str):
+                                print(f"Received error for controls {controls_hash}: {sensing}")
+                                raise Exception(sensing)
 
                             end_time = time.time() - start_time
                             print(f"Received response for controls {controls_hash} in {end_time:.2f} seconds after {retry} retries")
                             
-                            result = list(zip(controls, positions))
+                            result = list(zip(controls, sensing))
                             self.sim_memo[controls_hash] = result
 
                             return result
