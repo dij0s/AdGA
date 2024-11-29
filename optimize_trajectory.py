@@ -91,6 +91,7 @@ class GAManager():
         pop_hash = hash(str(population))
         print(f"Starting evolution for population {pop_hash}, {len(population)} individuals, {iterations} iterations")
 
+        best_fitnesses = []
         for _ in range(iterations):
             print(f"Starting iteration {_ + 1}/{iterations} for population {pop_hash}")
 
@@ -112,6 +113,7 @@ class GAManager():
 
             fitnesses = [self._fitness(positions_seq) for positions_seq in positions]
             #fitnesses = [self._fitness2(positions_seq, ref_trajectory) for positions_seq in positions]
+            best_fitnesses.append(max(fitnesses))
 
             population = simulation_results
 
@@ -131,7 +133,7 @@ class GAManager():
 
                 population.append(child)
 
-        return population, fitnesses
+        return population, fitnesses, best_fitnesses
 
     def tournament_selection(self, population, fitnesses, k=2):
         """

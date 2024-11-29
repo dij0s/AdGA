@@ -52,7 +52,7 @@ def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1,
 
     pop = genetic_algorithm.create_population(trajectory[0], trajectory[1])
 
-    evolved_pop, fitnesses = asyncio.run(genetic_algorithm.evolve(pop, trajectory, iterations=iterations))
+    evolved_pop, fitnesses, best_fitnesses = asyncio.run(genetic_algorithm.evolve(pop, trajectory, iterations=iterations))
 
     z = zip(evolved_pop, fitnesses)
     best = sorted(z, key=lambda x: x[1], reverse=True)[0]
@@ -72,21 +72,30 @@ def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1,
     ], dtype=np.float32)
 
     print("Found best trajectory: ", best_trajectory)
-    sendbuf_size = flattened_trajectory.size
-    sendbuf = flattened_trajectory.flatten()
+    t_sendbuf_size = flattened_trajectory.size
+    f_sendbuf_size = best_fitnesses.size
+    t_sendbuf = flattened_trajectory.flatten()
+    f_sendbuf = best_fitnesses.flatten()
+    t_recvbuf = None
+    f_recvbuf = None
 
     # Prepare the receive buffer on the root process
     if rank == 0:
-        recvbuf = np.empty(size * sendbuf_size, dtype=np.float32)
-    else:
-        recvbuf = None
+        t_recvbuf = np.empty(size * t_sendbuf_size, dtype=np.float32)
+        f_recvbuf = np.empty(size * f_sendbuf_size, dtype=np.float32)
 
-    comm.Gather(sendbuf, recvbuf, root=0)
-
+    comm.Gather(t_sendbuf, t_recvbuf, root=0)
+    comm.Gather(f_sendbuf, f_recvbuf, root=0)
+    
     if rank == 0:
-        recvbuf = recvbuf.reshape(size, -1)  # Each row corresponds to one process's data
-        np.savez(output_file, recvbuf)
+        t_recvbuf = t_recvbuf.reshape(size, -1)  # Each row corresponds to one process's data
+        np.savez(output_file, t_recvbuf)
         print(f"Time taken: {time.time() - start_time:.2f} seconds")
+
+        f_recvbuf = f_recvbuf.reshape(size, -1) # Each row corresponds to one process's data
+        for i, f in enumerate(f_recvbuf):
+            print(f"Trajectory {i}: {f}")
+
 
     MPI.Finalize()
 
