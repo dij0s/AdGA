@@ -17,7 +17,7 @@ class Simulator:
         self._controls = deque(controls)
         self._init_position = init_position
         self._init_speed = init_speed
-        self._init_rotation = init_rotation 
+        self._init_rotation = init_rotation
         self.simulation_queue = simulation_queue
         self._recorded_data = []
         self._ursina_callback = ursina_callback
@@ -60,7 +60,7 @@ class Simulator:
         car.set_track(track)
 
         self.controller = RemoteController(car=car)
-        
+
         car.visible = True
         car.enable()
 
@@ -71,7 +71,7 @@ class Simulator:
 
     def _collect_data(self, message):
         self._recorded_data.append(message)
-        
+
         if self._controls:
             current_control = self._controls.popleft()
             for command, start in current_control:
@@ -85,7 +85,9 @@ class Simulator:
             self.running = False
             self.network_interface.close()
             self.simulation_queue.put(self._recorded_data)
+            print("Am I killing ?")
             self._ursina_callback()
+            print("Killed..")
 
     def _send_command(self, direction, start):
         command_types = ["release", "push"]
