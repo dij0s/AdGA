@@ -2,10 +2,14 @@ import subprocess
 
 from optimize_trajectory import GAManager
 
-requests_per_pod = 3
-nodelist = "calypso[1]"
-n_nodes = 1
-n_tasks = 42 
+CALYPSO_CPUS = {
+    0: 48,
+    1: 72,
+}
+
+# Parameters
+calpsos_to_use = [ 1 ]
+requests_per_pod = 2
 split_window_size = 10
 split_overlap = 5
 trajectories_file = "records/record_241119111936.npz"
@@ -14,12 +18,15 @@ elite_size = 2
 mutation_rate = 0.1
 iterations = 5
 
+nodelist = f"calypso[{','.join([str(cpu) for cpu in calpsos_to_use])}]"
+n_nodes = len(calpsos_to_use)
+n_tasks = sum([CALYPSO_CPUS[calypso] for calypso in calpsos_to_use])
 result = subprocess.run("kubectl get pods --no-headers -n isc3 |  awk '{print $1}'  | uniq -c | wc -l", stdout=subprocess.PIPE, shell=True, text=True)
 pods_count = int(result.stdout.strip())
 
 genetic_algorithm = GAManager()
 trajectories = genetic_algorithm.split_recording_into_trajectories(
-    "records/record_241119111936.npz",
+    trajectories_file=trajectories_file,
     split_window_size=split_window_size,
     split_overlap=split_overlap
 )
@@ -35,7 +42,7 @@ if n_trajectories < n_tasks:
     n_tasks = n_trajectories
 
 if n_trajectories > n_tasks:
-    print("Warning: more trajectories than tasks! Some trajectories will not be processed.")
+    print("/!\ Warning: more trajectories than tasks! Some trajectories will not be processed.")
 
 
 replacements = {
