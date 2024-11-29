@@ -1,12 +1,11 @@
-from PyQt6 import QtWidgets
-from data_collector import DataCollectionUI
+from os import name
+import sys
 
-import pickle, lzma
-from functools import reduce
+import numpy as np
+from collections import deque
 
-class OsdNNMsgProcessor:
-    def __init__(self, ga_inputs):
-        # load ga-infered controls
+class ImageRecorder():
+    def __init__(self, ga_inputs) -> None:
         raw_inputs = np.load(ga_inputs)['arr_0'].copy().reshape(-1, 10)
         print(raw_inputs.shape)
         # with lzma.open(autopilot_record_file, "rb") as file:
@@ -45,7 +44,7 @@ class OsdNNMsgProcessor:
         self._max_rank = max_rank
         self._directions = ["forward", "back", "left", "right"]
 
-    def process_message(self, _, data_collector):
+    def start(self) -> None:
         # check if controls
         # of current rank
         # are consumed
@@ -74,20 +73,6 @@ class OsdNNMsgProcessor:
             # controls queue
             data_collector.onCarControlled(command, start)
 
-if  __name__ == "__main__":
-    import sys
-
-    import numpy as np
-    from collections import deque
-
-    def except_hook(cls, exception, traceback):
-        sys.__excepthook__(cls, exception, traceback)
-    sys.excepthook = except_hook
-
-    app = QtWidgets.QApplication(sys.argv)
-
-    nn_brain = OsdNNMsgProcessor(sys.argv[1])
-    data_window = DataCollectionUI(nn_brain.process_message)
-    data_window.show()
-
-    app.exec()
+if name == "__main__":
+    image_recorder = ImageRecorder(sys.argv[1])
+    image_recorder.start()
