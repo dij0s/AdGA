@@ -30,6 +30,14 @@ max_concurrent_requests = (pods_count * requests_per_pod) // n_tasks
 template_file = "submit_jobs.template"
 template_content = open(template_file).read()
 
+# no need to run more tasks than there are trajectories
+if n_trajectories < n_tasks:
+    n_tasks = n_trajectories
+
+if n_trajectories > n_tasks:
+    print("Warning: more trajectories than tasks! Some trajectories will not be processed.")
+
+
 replacements = {
     "%%MAX_CONCURRENT_REQUESTS%%": str(max_concurrent_requests),
     "%%N_TASKS%%": str(n_tasks),
