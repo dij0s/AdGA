@@ -59,8 +59,8 @@ class Simulator:
         car.sports_car()
         car.set_track(track)
 
-        RemoteController(car=car, connection_port=7654)
-        print("[LOG] Created remote controller (listening socket)")
+        controller = RemoteController(car=car, connection_port=7654)
+        print(f"[LOG] Created remote controller (listening socket: {controller.listen_socket})")
 
         car.visible = True
         car.enable()

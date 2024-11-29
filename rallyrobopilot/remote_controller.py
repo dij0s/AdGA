@@ -1,4 +1,3 @@
-
 from ursina import *
 import socket
 import select
@@ -58,6 +57,8 @@ class RemoteController(Entity):
         # @flask_app.route('/sensing')
         # def get_sensing_route():
         #     return jsonify(self.get_sensing_data()), 200
+        #
+        self.open_connection_socket()
 
     def update(self):
         self.update_network()

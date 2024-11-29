@@ -4,7 +4,7 @@ import numpy as np
 from collections import deque
 from multiprocessing import Queue
 
-from ursina import *
+from ursina import Ursina
 
 from simulator import Simulator
 
@@ -89,7 +89,10 @@ if __name__ == "__main__":
     ursina_app = Ursina(size=(320, 256))
 
     image_recorder = ImageRecorder(sys.argv[1], lambda: ursina_app.destroy())
+
     simulation_data = image_recorder.start()
 
     # Run Ursina event loop
+    print("Am I here ?")
     ursina_app.run()
+    print("I am..")
