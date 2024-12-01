@@ -1,4 +1,5 @@
 from ursina import *
+from ursina import application
 import socket
 import select
 import numpy as np
@@ -36,26 +37,6 @@ class RemoteController(Entity):
         self.sensing_period = PERIOD_REMOTE_SENSING
         self.last_sensing = -1
 
-        # Setup http route for updating.
-        # @flask_app.route('/command', methods=['POST'])
-        # def send_command_route():
-        #     if self.car is None:
-        #         return jsonify({"error": "No car connected"}), 400
-
-        #     command_data = request.json
-        #     if not command_data or 'command' not in command_data:
-        #         return jsonify({"error": "Invalid command data"}), 400
-
-        #     try:
-        #         self.client_commands.add(command_data['command'].encode())
-        #         return jsonify({"status": "Command received"}), 200
-        #     except Exception as e:
-        #         return jsonify({"error": str(e)}), 500
-
-        # @flask_app.route('/sensing')
-        # def get_sensing_route():
-        #     return jsonify(self.get_sensing_data()), 200
-        #
         self.open_connection_socket()
 
     def update(self):
@@ -79,14 +60,15 @@ class RemoteController(Entity):
             snapshot.collision_counter = self.car.collision_counter
             # snapshot.raycast_distances = self.car.multiray_sensor.collect_sensor_values()
 
-            #   Collect last rendered image
-            tex = base.win.getDisplayRegion(0).getScreenshot()
-            arr = tex.getRamImageAs("RGB")
-            data = np.frombuffer(arr, np.uint8)
-            image = data.reshape(tex.getYSize(), tex.getXSize(), 3)
-            image = image[::-1, :, :]#   Image arrives with inverted Y axis
-
-            snapshot.image = image
+            if hasattr(application, 'base') and hasattr(application.base, 'win'):
+                tex = application.base.win.getDisplayRegion(0).getScreenshot()
+                arr = tex.getRamImageAs("RGB")
+                data = np.frombuffer(arr, np.uint8)
+                image = data.reshape(tex.getYSize(), tex.getXSize(), 3)
+                image = image[::-1, :, :]  # Image arrives with inverted Y axis
+                snapshot.image = image
+            else:
+                snapshot.image = None
 
             msg_mngr = SensingSnapshotManager()
             data = msg_mngr.pack(snapshot)

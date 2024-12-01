@@ -1,11 +1,11 @@
 import sys
+import time
 
 import numpy as np
 from collections import deque
 from multiprocessing import Queue
 
-from ursina import Ursina
-from ursina import application
+from ursina import Ursina, application
 
 from simulator import Simulator
 
@@ -46,6 +46,16 @@ class ImageRecorder():
         self._max_rank = max_rank
 
     def start(self):
+        def wait_for_window():
+            while not hasattr(application, 'base') or not hasattr(application.base, 'win'):
+                time.sleep(0.1)
+            print("[LOG] Ursina window initialized")
+
+        # wait for ursina
+        # window to be
+        # initialized
+        wait_for_window()
+
         # check if controls
         # of current rank
         # are consumed
@@ -78,7 +88,10 @@ class ImageRecorder():
                 simulation.stop()
 
                 simulation_data = simulation_queue.get()
-                print([s.car_position for s in simulation_data])
+                simulation_images = [snapshot.image for snapshot in simulation_data]
+                print(simulation_images)
+                # save images to npz file
+                np.savez_compressed('image_data.npz', images=simulation_images)
 
         simulation = Simulator(
             simulation_queue=simulation_queue,
@@ -91,6 +104,8 @@ class ImageRecorder():
 
 if __name__ == "__main__":
     ursina_app = Ursina(size=(320, 256))
+    while not hasattr(ursina_app, 'win') or ursina_app.win is None:
+            time.sleep(0.1)
 
     def ursina_callback():
         print("[LOG] Killing Ursina application..")
