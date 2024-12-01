@@ -5,10 +5,8 @@ import numpy as np
 
 from flask import Flask, request, jsonify
 
-
 from .sensing_message import SensingSnapshot, SensingSnapshotManager
 from .remote_commands import RemoteCommandParser
-
 
 REMOTE_CONTROLLER_VERBOSE = False
 PERIOD_REMOTE_SENSING = 0.1

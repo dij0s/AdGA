@@ -5,7 +5,7 @@ from collections import deque
 from multiprocessing import Queue
 
 from ursina import Ursina
-from ursina.prefabs.tooltip import Quat
+from ursina import application
 
 from simulator import Simulator
 
@@ -25,6 +25,7 @@ class ImageRecorder():
         for raw_input in raw_inputs:
             rank = int(raw_input[0])
             if rank not in per_rank_controls:
+                print(raw_input)
                 max_rank = rank
                 per_rank_controls[rank] = deque([])
                 # append init_position, init_speed
@@ -48,8 +49,11 @@ class ImageRecorder():
         # check if controls
         # of current rank
         # are consumed
-        self.current_rank = 0
+        directions = ["forward", "back", "left", "right"]
         current_controls_queue = lambda n: self._per_rank_controls.get(n, None)
+        map_controls_to_commands = lambda cs: [(directions[css[0]], css[1]) for css in enumerate(cs)]
+
+        self.current_rank = 0
 
         simulation_queue = Queue()
         simulation_data = []
@@ -62,7 +66,7 @@ class ImageRecorder():
 
                 # queue is not consumed yet, play
                 # controls of current rank queue
-                current_trajectory_controls = deque([list(cs) for cs in current_controls])
+                current_trajectory_controls = deque([map_controls_to_commands(cs) for cs in current_controls])
                 current_trajectory_setup = self._per_rank_setup[self.current_rank]
 
                 simulation.play(current_trajectory_controls, current_trajectory_setup)
@@ -70,10 +74,11 @@ class ImageRecorder():
 
                 self.current_rank += 1
             else:
+                print("[LOG] Consumed all controls to be played")
                 simulation.stop()
 
                 simulation_data = simulation_queue.get()
-                print([s.image for s in simulation_data])
+                print([s.car_position for s in simulation_data])
 
         simulation = Simulator(
             simulation_queue=simulation_queue,
@@ -86,6 +91,7 @@ class ImageRecorder():
 
 if __name__ == "__main__":
     ursina_app = Ursina(size=(320, 256))
+
     def ursina_callback():
         print("[LOG] Killing Ursina application..")
         ursina_app.destroy()

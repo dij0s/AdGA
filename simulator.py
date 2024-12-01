@@ -1,7 +1,10 @@
 import time
 import threading
-from rallyrobopilot import *
+
 from math import sqrt
+
+from rallyrobopilot import *
+from ursina import *
 
 class Simulator:
     """
@@ -10,7 +13,6 @@ class Simulator:
     the network
     """
     def __init__(self, init_position, init_speed, init_rotation, simulation_queue, ursina_callback, play_callback):
-        # TODO: Add init_speed
         super().__init__()
 
         self._controls = None
@@ -36,10 +38,12 @@ class Simulator:
 
         # setup car position
         # and properties
-        self.reset_position = setup["init_position"]
-        self.reset_orientation = (0, setup["init_rotation"], 0)
-        self.reset_speed = setup["init_speed"]
-        print("[LOG] Resetted car position")
+        self.car.reset_position = setup["init_position"]
+        self.car.reset_orientation = (0, setup["init_rotation"], 0)
+        self.car.reset_speed = setup["init_speed"]
+
+        self.car.reset_car()
+        print(f"[LOG] Resetted car properties: position: {self.car.position}, rotation: {self.car.rotation}, speed: {self.car.speed}")
 
         self.running = True
 
@@ -71,19 +75,43 @@ class Simulator:
             time.sleep(0.1)  # 100 ms delay
 
     def _setup_server(self):
+        window.title = "Rally"
+        window.borderless = False
+        window.show_ursina_splash = False
+        window.cog_button.disable()
+        window.fps_counter.enable()
+        window.exit_button.disable()
+
+        global_models = [ "assets/cars/sports-car.obj", "assets/particles/particles.obj",  "assets/utils/line.obj"]
+        global_texs = [ "assets/cars/garage/sports-car/sports-red.png", "sports-blue.png", "sports-green.png", "sports-orange.png", "sports-white.png", "particle_forest_track.png", "red.png"]
+
+
         # Setup track and car
         track = Track("rallyrobopilot/assets/SimpleTrack/track_metadata.json")
+        track.load_assets(global_models, global_texs)
         print("[LOG] Loaded track metadata")
 
         car = Car(position=self._init_position, speed=self._init_speed, rotation=(0, self._init_rotation, 0))
         car.sports_car()
         car.set_track(track)
 
+        sun = SunLight(direction = (-0.7, -0.9, 0.5), resolution = 3072, car = car)
+        ambient = AmbientLight(color = Vec4(0.5, 0.55, 0.66, 0) * 0.75)
+
+        render.setShaderAuto()
+
+        # Sky
+        Sky(texture = "sky")
+
         controller = RemoteController(car=car, connection_port=7654)
         print(f"[LOG] Created remote controller (listening socket: {controller.listen_socket})")
 
         car.visible = True
         car.enable()
+
+        car.camera_angle = "top"
+        car.change_camera = True
+        car.camera_follow = True
 
         self.car = car
 
