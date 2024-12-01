@@ -62,7 +62,6 @@ class RemoteController(Entity):
 
     def update(self):
         self.update_network()
-        self.process_remote_commands()
         self.process_sensing()
 
     def process_sensing(self):
@@ -70,6 +69,7 @@ class RemoteController(Entity):
             return
 
         if time.time() - self.last_sensing >= self.sensing_period:
+            self.process_remote_commands()
             snapshot = SensingSnapshot()
             snapshot.current_controls = (held_keys['w'] or held_keys["up arrow"],
                                          held_keys['s'] or held_keys["down arrow"],
@@ -79,7 +79,7 @@ class RemoteController(Entity):
             snapshot.car_speed = self.car.speed
             snapshot.car_angle = self.car.rotation_y
             snapshot.collision_counter = self.car.collision_counter
-            snapshot.raycast_distances = self.car.multiray_sensor.collect_sensor_values()
+            # snapshot.raycast_distances = self.car.multiray_sensor.collect_sensor_values()
 
             #   Collect last rendered image
             tex = base.win.getDisplayRegion(0).getScreenshot()
@@ -109,7 +109,7 @@ class RemoteController(Entity):
         car_position = self.car.world_position
         car_speed = self.car.speed
         car_angle = self.car.rotation_y
-        raycast_distances = self.car.multiray_sensor.collect_sensor_values()
+        # raycast_distances = self.car.multiray_sensor.collect_sensor_values()
         return {'up': current_controls[0],
                 'down': current_controls[1],
                 'left': current_controls[2],

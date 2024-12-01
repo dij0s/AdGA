@@ -5,13 +5,13 @@ from collections import deque
 from multiprocessing import Queue
 
 from ursina import Ursina
+from ursina.prefabs.tooltip import Quat
 
 from simulator import Simulator
 
 class ImageRecorder():
     def __init__(self, ga_inputs, ursina_callback) -> None:
         self._ursina_callback = ursina_callback
-        self._current_rank = 0
 
         raw_inputs = np.load(ga_inputs)['arr_0'].copy().reshape(-1, 10)
 
@@ -37,62 +37,62 @@ class ImageRecorder():
 
             # parse raw inputs to
             # only get controls
-            per_rank_controls[rank] = [*per_rank_controls[rank], map(int, raw_input[1:5])]
+            per_rank_controls[rank].append(map(int, raw_input[1:5]))
 
-        # parse the dict into a
-        # consummable queue
-        # for each rank
         self._per_rank_controls = per_rank_controls
         self._per_rank_setup = per_rank_setup
 
         self._max_rank = max_rank
 
-    def start(self) -> list:
+    def start(self):
         # check if controls
         # of current rank
         # are consumed
-        current_controls_queue = lambda: self._per_rank_controls[self._current_rank]
+        self.current_rank = 0
+        current_controls_queue = lambda n: self._per_rank_controls.get(n, None)
+
+        simulation_queue = Queue()
         simulation_data = []
 
-        while current_controls_queue():
-            # queue is not consumed yet play
-            # controls of current rank queue
-            current_trajectory_controls = [list(cs) for cs in current_controls_queue()]
-            current_trajectory_setup = self._per_rank_setup[self._current_rank]
+        def play_trajectory():
+            if current_controls_queue(self.current_rank):
+                # there are controls
+                # to be played still
+                current_controls = current_controls_queue(self.current_rank)
 
-            simulation_queue = Queue()
+                # queue is not consumed yet, play
+                # controls of current rank queue
+                current_trajectory_controls = deque([list(cs) for cs in current_controls])
+                current_trajectory_setup = self._per_rank_setup[self.current_rank]
 
-            simulation = Simulator(
-                controls=current_controls_queue,
-                simulation_queue=simulation_queue,
-                ursina_callback=self._ursina_callback,
-                **current_trajectory_setup
-            )
-            print(f"[LOG] Simulator instance created (rank {self._current_rank})")
-            simulation.start()
+                simulation.play(current_trajectory_controls, current_trajectory_setup)
+                print(f"[LOG] Controls sent to simulator (rank {self.current_rank})")
 
-            simulation_data.append(simulation_queue.get())
+                self.current_rank += 1
+            else:
+                simulation.stop()
 
-        print("[LOG] All trajectories are consumed.")
-        return simulation_data
-        # map command to remote instruction
-        # for command, start in (
-        #     map(
-        #         lambda ic: (self._directions[ic[0]], ic[1]),
-        #         enumerate(current_command)
-        #     )):
-        #     # run each command in
-        #     # controls queue
-        #     data_collector.onCarControlled(command, start)
+                simulation_data = simulation_queue.get()
+                print([s.image for s in simulation_data])
+
+        simulation = Simulator(
+            simulation_queue=simulation_queue,
+            ursina_callback=self._ursina_callback,
+            play_callback=play_trajectory,
+            **self._per_rank_setup[0]
+        )
+        print("[LOG] Created simulator instance")
+
 
 if __name__ == "__main__":
     ursina_app = Ursina(size=(320, 256))
+    def ursina_callback():
+        print("[LOG] Killing Ursina application..")
+        ursina_app.destroy()
 
-    image_recorder = ImageRecorder(sys.argv[1], lambda: ursina_app.destroy())
-
-    simulation_data = image_recorder.start()
+    image_recorder = ImageRecorder(sys.argv[1], ursina_callback)
+    image_recorder.start()
 
     # Run Ursina event loop
-    print("Am I here ?")
+    print("[LOG] Starting the Ursina event loop..")
     ursina_app.run()
-    print("I am..")

@@ -138,6 +138,7 @@ class Car(Entity):
         self.track = track
         self.reset_position = track.car_default_reset_position
         self.reset_orientation = track.car_default_reset_orientation
+        self.reset_speed = 0
         self.position = self.reset_position
         self.rotation_y = self.reset_orientation[1]
 
@@ -401,13 +402,12 @@ class Car(Entity):
         self.position = self.reset_position
         #y_ray = raycast(origin = self.reset_position, direction = (0,-1,0), ignore = [self,])
         #self.y = y_ray.world_point.y + 1.4
-        print(self.reset_orientation)
         self.rotation_y = self.reset_orientation[1]
 
         print("reseting at", str(self.position), " --> ", self.rotation_y)
 
         camera.world_rotation_y = self.rotation_y
-        self.speed = 0
+        self.speed = self.reset_speed
         self.velocity_y = 0
         self.timer_running = False
         for trail in self.trails:
