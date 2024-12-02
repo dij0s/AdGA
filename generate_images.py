@@ -105,7 +105,7 @@ class ImageRecorder():
 if __name__ == "__main__":
     ursina_app = Ursina(size=(320, 256))
     while not hasattr(ursina_app, 'win') or ursina_app.win is None:
-            time.sleep(0.1)
+        time.sleep(0.1)
 
     def ursina_callback():
         print("[LOG] Killing Ursina application..")
