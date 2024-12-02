@@ -46,22 +46,11 @@ class Simulator:
 
         print("[LOG] Configured network interface")
 
-        self.play(self._controls, {
-            "init_position": self._init_position,
-            "init_speed": self._init_speed,
-            "init_rotation": self._init_rotation
-        })
-
-    def play(self, controls, setup):
-        self._controls = controls
-
-        # setup car position
-        # and properties
-        self.car.reset_position = setup["init_position"]
-        self.car.reset_orientation = (0, setup["init_rotation"], 0)
-        self.car.reset_speed = setup["init_speed"]
-
+        self.car.reset_position = self._init_position
+        self.car.reset_orientation = (0, self._init_rotation, 0)
+        self.car.reset_speed = self._init_speed 
         self.car.reset_car()
+
         print(f"[LOG] Resetted car properties: position: {self.car.position}, rotation: {self.car.rotation}, speed: {self.car.speed}")
 
         self.running = True
