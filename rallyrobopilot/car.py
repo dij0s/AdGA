@@ -40,6 +40,7 @@ class Car(Entity):
 
         self.reset_position = (0, 0, 0)
         self.reset_rotation = (0, 0, 0)
+        self.reset_speed = 0
 
         # Camera Follow
         self.camera_angle = "top"
@@ -397,13 +398,13 @@ class Car(Entity):
         print("reseting at", str(self.position), " --> ", self.rotation_y)
 
         camera.world_rotation_y = self.rotation_y
-        self.speed = 0
+        self.speed = self.reset_speed
         self.velocity_y = 0
         self.timer_running = False
-        for trail in self.trails:
-            if trail.trailing:
-                trail.end_trail()
-        self.start_trail = True
+        # for trail in self.trails:
+        #     if trail.trailing:
+        #         trail.end_trail()
+        # self.start_trail = True
 
     def simple_intersects(self, entity):
         """
