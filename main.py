@@ -35,8 +35,8 @@ car.set_track(track)
 
 remote_controller = RemoteController(car = car, connection_port=7654, flask_app=None)
 
-car.multiray_sensor = MultiRaySensor(car, 15, 90)
-car.multiray_sensor.enable()
+# car.multiray_sensor = MultiRaySensor(car, 15, 90)
+# car.multiray_sensor.enable()
 
 # Lighting + shadows
 sun = SunLight(direction = (-0.7, -0.9, 0.5), resolution = 3072, car = car)
