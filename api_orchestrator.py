@@ -18,12 +18,8 @@ class ApiOrchestratorSingleton:
         self.pods_usage = {}
         self.pods = []
 
-        result = subprocess.run(
-            ["kubectl", "get", "pods", "-n", "isc3", "-l", "app=sim", "-o", "json"],
-            capture_output=True,
-            text=True
-        )
-        pods_info = json.loads(result.stdout)
+        with open('sim-pods.json', 'r') as f:
+            pods_info = json.loads(f.read())
         self.pods = pods_info['items']
 
         for i in self.pods:
