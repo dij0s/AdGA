@@ -1,6 +1,7 @@
 import threading
 from kubernetes import client, config
 from flask import Flask, jsonify, request
+import requests
 
 app = Flask(__name__)
 
@@ -41,7 +42,7 @@ class ApiOrchestratorApi:
             orchestrator.pods_usage[min_pod] += 1
 
         try:
-            response = request.post(f"{min_pod}:5000/api/simulate", json=data)
+            response = requests.post(f"{min_pod}:5000/api/simulate", json=data)
         except Exception as e:
             return jsonify({"error": "Failed to communicate with the simulator", "exception": e}), 500
         finally:
