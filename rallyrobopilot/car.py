@@ -296,6 +296,14 @@ class Car(Entity):
                         return control[1]
                 return 0
 
+            # Insert initial state
+            if self.recorded_data == []:
+                self.recorded_data.append({
+                    "car_position": (self.position[0], self.position[1], self.position[2]),
+                    "car_speed": self.speed,
+                    "car_angle": self.rotation_y
+                })
+
             held_keys[self.controls[0]] = get_control("forward")
             held_keys[self.controls[1]] = get_control("left")
             held_keys[self.controls[2]] = get_control("back")

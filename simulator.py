@@ -47,7 +47,6 @@ class Simulator:
                 print("[LOG] Simulation done")
                 self.running = False
                 print(f"[LOG] Received a total of {len(self.car.recorded_data)} sensor messages")
-                rd = self.car.recorded_data
                 self.simulation_queue.put(self.car.recorded_data)
                 print("Am I killing ?")
                 self._ursina_callback()
