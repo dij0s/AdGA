@@ -5,11 +5,14 @@ from multiprocessing import Process, Queue
 from simulator import Simulator
 from ursina import *
 import time
+import uuid
 
 app = Flask(__name__)
+app_id = str(uuid.uuid4()) 
 
 # Define a queue to communicate with the simulation process
 simulation_queue = Queue()
+
 
 def run_simulation(fake_controls, init_pos, init_speed, init_rotation, simulation_queue):
     try:
@@ -34,7 +37,7 @@ def run_simulation(fake_controls, init_pos, init_speed, init_rotation, simulatio
 
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
-    print("[/api/simulate/] Received request to simulate")
+    print(f"[/api/simulate/] Received request to simulate @{app_id}")
     # try:
     #     requests.get("http://192.168.89.26:8080")
     # except Exception as e:
@@ -59,13 +62,13 @@ def simulate():
 
         # Check if the process died and exited with an error
         if not process.is_alive() and process.exitcode != 0:
-            print("[/api/simulate/] ERROR - Simulation process has exited unexpectedly (crashed or something)")
+            print(f"[/api/simulate/] ERROR - Simulation process has exited unexpectedly (crashed or something) @{app_id}")
             return jsonify({"error": "Simulation process has exited unexpectedly (crashed or something)"}), 500
 
     simulation_data = simulation_queue.get()
     process.kill()
 
-    print("[/api/simulate/] Simulation completed successfully")
+    print(f"[/api/simulate/] Simulation completed successfully @{app_id}")
     print(f"[/api/simulate/] Returning simulation data: \n ===>{simulation_data}")
     return jsonify(simulation_data)
 
