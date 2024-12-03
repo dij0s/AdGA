@@ -6,3 +6,8 @@ services:
     image: dij0s/headless-sim:latest
     stdin_open: true # Keep stdin open even if not attached
     tty: true # Allocate a pseudo-TTY
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.orchestrator
+    image: dij0s/orchestrator:latest

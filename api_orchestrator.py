@@ -44,7 +44,7 @@ class ApiOrchestratorApi:
         try:
             response = requests.post(f"{min_pod}:5000/api/simulate", json=data)
         except Exception as e:
-            return jsonify({"error": "Failed to communicate with the simulator", "exception": e}), 500
+            return jsonify({"error": "Failed to communicate with the simulator", "exception": str(e)}), 500
         finally:
             with orchestrator.lock:
                 orchestrator.pods_usage[min_pod] -= 1
