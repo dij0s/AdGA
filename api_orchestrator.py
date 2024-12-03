@@ -13,8 +13,6 @@ class ApiOrchestratorSingleton:
             ApiOrchestratorSingleton.instance = ApiOrchestratorSingleton(max_simultaneous_requests)
 
     def __init__(self, max_simultaneous_requests):
-        config.load_kube_config()
-
         self.max_simultaneous_requests = max_simultaneous_requests
         self.pods_usage = {}
         self.pods = []
