@@ -1,7 +1,8 @@
 import threading
-from kubernetes import client, config
 from flask import Flask, jsonify, request
 import requests
+import subprocess
+import json
 
 app = Flask(__name__)
 
@@ -17,12 +18,16 @@ class ApiOrchestratorSingleton:
         self.pods_usage = {}
         self.pods = []
 
-        v1 = client.CoreV1Api()
-        print("Listing pods with their IPs:")
-        self.pods = v1.list_namespaced_pod(namespace='isc3', label_selector='app=sim').items
+        result = subprocess.run(
+            ["kubectl", "get", "pods", "-n", "isc3", "-l", "app=sim", "-o", "json"],
+            capture_output=True,
+            text=True
+        )
+        pods_info = json.loads(result.stdout)
+        self.pods = pods_info['items']
 
         for i in self.pods:
-            self.pods_usage[i.status.pod_ip] = 0
+            self.pods_usage[i['status']['podIP']] = 0
 
         self.lock = threading.Lock()
 
