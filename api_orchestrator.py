@@ -48,7 +48,7 @@ class ApiOrchestratorApi:
 
         try:
             print(f"Sending request to {min_pod}")
-            response = requests.post(f"http://{min_pod}:30308/api/simulate", json=data)
+            response = requests.post(f"http://{min_pod}:5000/api/simulate", json=data)
         except Exception as e:
             print(f"Failed to communicate with the simulator")
             print(e)
