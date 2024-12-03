@@ -2,7 +2,7 @@ import time
 import requests
 from flask import Flask, jsonify, request
 from multiprocessing import Process, Queue
-from simulator import Simulator
+from simulator_lite import SimulatorLite
 from ursina import *
 import time
 import uuid
@@ -25,7 +25,7 @@ def run_simulation(fake_controls, init_pos, init_speed, init_rotation, simulatio
         kill_ursina = lambda: ursina_app.destroy()
 
         # Start the simulator
-        simulation = Simulator(fake_controls, init_pos, init_speed, init_rotation, simulation_queue, kill_ursina)
+        simulation = SimulatorLite(fake_controls, init_pos, init_speed, init_rotation, simulation_queue, kill_ursina)
         simulation.start()
 
         # Run Ursina event loop

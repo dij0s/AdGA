@@ -63,8 +63,6 @@ class Simulator:
         car.simulate_controls = True
         self.car = car
 
-        self.controller = RemoteController(car=car)
-
         car.visible = True
         car.enable()
 
