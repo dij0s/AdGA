@@ -3,7 +3,7 @@ FROM debian:stable-slim
 EXPOSE 5001
 
 WORKDIR /app
-RUN apt-get update 
+RUN apt-get update
 RUN apt-get install -y git && apt-get clean
 RUN git clone https://github.com/dij0s/AdGA.git .
 COPY . .
@@ -20,4 +20,4 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.orchestrator.txt
 RUN pip install python3_xlib
 
-CMD ["python", "orchestrator.py"]
+CMD ["python", "api_orchestrator.py"]
