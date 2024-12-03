@@ -4,7 +4,7 @@ from rallyrobopilot import *
 from collections import deque
 from math import sqrt
 
-class Simulator:
+class SimulatorLite:
     """
     Simulate a series of controls
     on a car instance

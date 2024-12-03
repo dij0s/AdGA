@@ -3,3 +3,4 @@ rallyrobopilot/__pycache__
 __pycache__
 out.txt
 submit_jobs.sh
+*.npz

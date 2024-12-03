@@ -6,13 +6,15 @@ from ursina import curve
 from math import pow, atan2
 import json
 
-TIME_DT = 0.1   # Fixed time delta to ensure consistent and faster simulation
+from rallyrobopilot.particles import TrailRenderer
+from rallyrobopilot.sun import SunLight
 
+TIME_DT = 0.1
 sign = lambda x: -1 if x < 0 else (1 if x > 0 else 0)
 Text.default_resolution = 1080 * Text.size
 
 class Car(Entity):
-    def __init__(self, position = (0, 0, 4), speed = 0, rotation = (0, 0, 0), topspeed = 30, acceleration = 0.35, braking_strength = 30, friction = 1.5, camera_speed = 8):
+    def __init__(self, position = (0, 0, 4), rotation = (0, 0, 0), topspeed = 30, acceleration = 0.35, braking_strength = 30, friction = 1.5, camera_speed = 8, speed = 0):
         super().__init__(
             model = "sports-car.obj",
             texture = "sports-red.png",
@@ -29,7 +31,7 @@ class Car(Entity):
         self.simulation_done = False
 
         # Car's values
-        self.speed = 0
+        self.speed = speed
         self.velocity_y = 0
         self.rotation_speed = 0
         self.max_rotation_speed = 1.6
@@ -41,6 +43,7 @@ class Car(Entity):
         self.friction = friction
         self.turning_speed = 5
         self.pivot_rotation_distance = 1
+        self.collision_counter = 0
 
         self.recorded_data = []
 
@@ -75,6 +78,12 @@ class Car(Entity):
         # TrailRenderer
         self.trail_pivot = Entity(parent = self, position = (0, -1, 2))
 
+        self.trail_renderer1 = TrailRenderer(parent = self.particle_pivot, position = (0.8, -0.2, 0), color = color.black, alpha = 0, thickness = 7, length = 200)
+        self.trail_renderer2 = TrailRenderer(parent = self.particle_pivot, position = (-0.8, -0.2, 0), color = color.black, alpha = 0, thickness = 7, length = 200)
+        self.trail_renderer3 = TrailRenderer(parent = self.trail_pivot, position = (0.8, -0.2, 0), color = color.black, alpha = 0, thickness = 7, length = 200)
+        self.trail_renderer4 = TrailRenderer(parent = self.trail_pivot, position = (-0.8, -0.2, 0), color = color.black, alpha = 0, thickness = 7, length = 200)
+
+        self.trails = [self.trail_renderer1, self.trail_renderer2, self.trail_renderer3, self.trail_renderer4]
         self.start_trail = True
 
         # Collision
@@ -97,7 +106,7 @@ class Car(Entity):
 
         self.laps_text = Text(text = "", origin = (0, 0), size = 0.05, scale = (1.1, 1.1), position = (0, 0.43))
         self.reset_count_timer = Text(text = str(round(self.reset_count, 1)), origin = (0, 0), size = 0.05, scale = (1, 1), position = (-0.7, 0.43))
-        
+
         self.timer.disable()
 
         self.laps_text.disable()
@@ -139,7 +148,8 @@ class Car(Entity):
         self.track = track
         self.reset_position = track.car_default_reset_position
         self.reset_orientation = track.car_default_reset_orientation
-        # self.position = self.reset_position
+        self.reset_speed = 0
+        self.position = self.reset_position
         self.rotation_y = self.reset_orientation[1]
 
     def sports_car(self):
@@ -249,7 +259,7 @@ class Car(Entity):
             self.rotation_speed = self.max_rotation_speed
         if self.rotation_speed <= -self.max_rotation_speed:
             self.rotation_speed = -self.max_rotation_speed
-            
+
         # Cap the camera rotation
         if self.camera_rotation >= 40:
             self.camera_rotation = 40
@@ -382,6 +392,8 @@ class Car(Entity):
 
             #   Detect collision
             if front_collision.distance < self.scale_x + distance_to_travel:
+                self.collision_counter += 1
+
                 free_dist = front_collision.distance - self.scale_x + distance_to_travel
 
                 #   cancel speed going directly into the obstacle
@@ -434,7 +446,6 @@ class Car(Entity):
         self.position = self.reset_position
         #y_ray = raycast(origin = self.reset_position, direction = (0,-1,0), ignore = [self,])
         #self.y = y_ray.world_point.y + 1.4
-        print(self.reset_orientation)
         self.rotation_y = self.reset_orientation[1]
 
         print("reseting at", str(self.position), " --> ", self.rotation_y)
@@ -466,7 +477,7 @@ class Car(Entity):
         maxYB = entity.y + entity.scale_y - (entity.scale_y / 2)
         minZB = entity.z - entity.scale_z + (entity.scale_z / 2)
         maxZB = entity.z + entity.scale_z - (entity.scale_z / 2)
-        
+
         return (
             (minXA <= maxXB and maxXA >= minXB) and
             (minYA <= maxYB and maxYA >= minYB) and
@@ -528,7 +539,7 @@ class CarUsername(Text):
             color = color.white,
             billboard = True
         )
-    
+
         self.username_text = "Guest"
 
     def update(self):
