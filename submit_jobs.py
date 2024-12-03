@@ -5,6 +5,8 @@ from optimize_trajectory import GAManager
 CALYPSO_CPUS = {
     0: 48,
     1: 72,
+    4: 48,
+    5: 48,
 }
 
 # Parameters
@@ -32,7 +34,6 @@ trajectories = genetic_algorithm.split_recording_into_trajectories(
 )
 
 n_trajectories = len(trajectories)
-max_concurrent_requests = (pods_count * requests_per_pod) // n_tasks
 
 template_file = "submit_jobs.template"
 template_content = open(template_file).read()
@@ -44,6 +45,7 @@ if n_trajectories < n_tasks:
 if n_trajectories > n_tasks:
     print("/!\ Warning: more trajectories than tasks! Some trajectories will not be processed.")
 
+max_concurrent_requests = (pods_count * requests_per_pod) // n_tasks
 
 replacements = {
     "%%MAX_CONCURRENT_REQUESTS%%": str(max_concurrent_requests),
