@@ -4,7 +4,7 @@ from direct.stdpy import thread
 from flask import Flask, request, jsonify
 from threading import Thread
 
-from rallyrobopilot import Car, RemoteController, Track, SunLight, MultiRaySensor
+from rallyrobopilot import Car, RemoteController, Track, SunLight
 
 # Window
 window.vsync = True # Set to false to uncap FPS limit of 60
