@@ -24,6 +24,10 @@ class Car(Entity):
         # Controls
         self.controls = "wasd"
 
+        self.controls_queue = None
+        self.simulate_controls = False
+        self.simulation_done = False
+
         # Car's values
         self.speed = 0
         self.velocity_y = 0
@@ -37,6 +41,8 @@ class Car(Entity):
         self.friction = friction
         self.turning_speed = 5
         self.pivot_rotation_distance = 1
+
+        self.recorded_data = []
 
         self.reset_position = (0, 0, 0)
         self.reset_rotation = (0, 0, 0)
@@ -279,6 +285,24 @@ class Car(Entity):
         if held_keys["escape"]:
             quit()
 
+        record_data = False
+
+        if self.simulate_controls and self.controls_queue:
+            current_controls = self.controls_queue.popleft()
+
+            def get_control(control_name):
+                for control in current_controls:
+                    if control[0] == control_name:
+                        return control[1]
+                return 0
+
+            held_keys[self.controls[0]] = get_control("forward")
+            held_keys[self.controls[1]] = get_control("left")
+            held_keys[self.controls[2]] = get_control("back")
+            held_keys[self.controls[3]] = get_control("right")
+
+            record_data = True
+
         self.check_respawn()
 
         #   Process inputs & update speed
@@ -383,6 +407,16 @@ class Car(Entity):
         self.update_camera()
 
         self.pivot.position = self.position
+
+        if record_data: 
+            self.recorded_data.append({
+                "car_position": (self.position[0], self.position[1], self.position[2]),
+                "car_speed": self.speed,
+                "car_angle": self.rotation_y
+            })
+
+            if len(self.controls_queue) == 0:
+                self.simulation_done = True
 
     def reset_car(self):
         """

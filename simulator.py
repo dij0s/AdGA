@@ -7,8 +7,7 @@ from math import sqrt
 class Simulator:
     """
     Simulate a series of controls
-    on a car instance through
-    the network
+    on a car instance
     """
     def __init__(self, controls, init_position, init_speed, init_rotation, simulation_queue, ursina_callback):
         # TODO: Add init_speed
@@ -26,25 +25,10 @@ class Simulator:
         self._setup_server()
 
     def start(self):
-        print("[LOG] Waiting for backend setup...")
-
-        # Wait for backend setup with a delay (5 seconds)
-        timer_thread = threading.Timer(5.0, self._start_network_interface)
-        timer_thread.start()
-
-    def _start_network_interface(self):
-        print("[LOG] Starting network interface")
-
-        # Create network interface
-        self.network_interface = NetworkDataCmdInterface(self._collect_data, port=self.controller.port)
-        print("[LOG] Created network interface")
-
-        # Simulate network message sending on a timed interval
+        # Run a loop in a thread on a timed interval to check for end of simulation
         self.running = True
-        self.network_thread = threading.Thread(target=self._network_loop)
-        self.network_thread.start()
-
-        print("[LOG] Configured network interface")
+        self.loop_thread = threading.Thread(target=self._sim_loop)
+        self.loop_thread.start()
 
         self.car.reset_position = self._init_position
         self.car.reset_orientation = (0, self._init_rotation, 0)
@@ -55,10 +39,19 @@ class Simulator:
 
         self.running = True
 
-    def _network_loop(self):
+    def _sim_loop(self):
         while self.running:
-            self.network_interface.send_msg()
-            time.sleep(0.1)  # 100 ms delay
+            time.sleep(1//120)  
+
+            if self.car.simulation_done:
+                print("[LOG] Simulation done")
+                self.running = False
+                print(f"[LOG] Received a total of {len(self.car.recorded_data)} sensor messages")
+                rd = self.car.recorded_data
+                self.simulation_queue.put(self.car.recorded_data)
+                print("Am I killing ?")
+                self._ursina_callback()
+                print("Killed..")
 
     def _setup_server(self):
         # Setup track and car
@@ -67,6 +60,8 @@ class Simulator:
         car = Car(position=self._init_position, speed=self._init_speed, rotation=(0, self._init_rotation, 0))
         car.sports_car()
         car.set_track(track)
+        car.controls_queue = self._controls
+        car.simulate_controls = True
         self.car = car
 
         self.controller = RemoteController(car=car)
@@ -78,35 +73,3 @@ class Simulator:
         track.played = True
 
         print("[LOG] Backend entities are all setup")
-
-    def _collect_data(self, message):
-        self._recorded_data.append(message)
-
-        if self._controls:
-            current_control = self._controls.popleft()
-            for command, start in current_control:
-                self._send_command(command, start)
-        else:
-            print("[LOG] No controls left")
-
-            self._recorded_data = [
-                {
-                    "car_position": sensor.car_position,
-                    "car_speed": sensor.car_speed,
-                    "car_angle": sensor.car_angle,
-                } for sensor in self._recorded_data[1:]
-            ]
-
-            print(f"[LOG] Received a total of {len(self._recorded_data)} sensor messages")
-
-            # Stop the network loop and clean up
-            self.running = False
-            self.network_interface.close()
-            self.simulation_queue.put(self._recorded_data)
-            print("Am I killing ?")
-            self._ursina_callback()
-            print("Killed..")
-
-    def _send_command(self, direction, start):
-        command_types = ["release", "push"]
-        self.network_interface.send_cmd(command_types[start] + " " + direction + ";")
