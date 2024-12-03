@@ -1,7 +1,8 @@
 services:
-  headless:
+  headless-sim:
     build:
       context: .
       dockerfile: Dockerfile.headless
-    stdin_open: true                # Keep stdin open even if not attached
-    tty: true                       # Allocate a pseudo-TTY
+    image: dij0s/headless-sim:latest
+    stdin_open: true # Keep stdin open even if not attached
+    tty: true # Allocate a pseudo-TTY
