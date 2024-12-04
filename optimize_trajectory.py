@@ -292,68 +292,46 @@ class GAManager():
         return sum([dist(p1, p2) for (p1, p2) in more_itertools.pairwise(positions)])
 
     def _fitness2(self, rec, ref_trajectory):
-        """
-        Compute the fitness of a sequence of positions
-        We define the fitness as the difference between the total travelled distance by the reference and the simulation,
-        with the goal of maximizing it
-        """
-
         positions = [record["car_position"] for record in rec]
         speeds = [record["car_speed"] for record in rec]
 
-        # try to find any negative speed values
         if any(speed < 0 for speed in speeds):
-            return -999999999
+            penalty = abs(sum(speed for speed in speeds if speed < 0))
+            return -1000 * penalty
 
         def dist(p1, p2):
             return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
         reference_positions = ref_trajectory[1]
-
         total_frames = len(positions)
-        sim_cum_distances = [ 0 ] * total_frames 
-        ref_cum_distances = [ 0 ] * total_frames
 
-        # compute the cumulative distances for the simulation and the reference
+        sim_cum_distances = [0] * total_frames
+        ref_cum_distances = [0] * total_frames
+
         for i in range(1, total_frames):
             sim_cum_distances[i] = sim_cum_distances[i - 1] + dist(positions[i - 1], positions[i])
             ref_cum_distances[i] = ref_cum_distances[i - 1] + dist(reference_positions[i - 1], reference_positions[i])
 
-        sim_total_distance = sim_cum_distances[-1]
         ref_total_distance = ref_cum_distances[-1]
+        sim_total_distance = sim_cum_distances[-1]
 
-        # find at which (whole) simulation frame we've reached the same distance as the reference
         reach_frame = -1
         for i, distance in enumerate(sim_cum_distances):
-            if sum(sim_cum_distances[:i]) >= ref_total_distance:
+            if distance >= ref_total_distance:
                 reach_frame = i
                 break
 
-        r = 0.0
         if reach_frame == -1:
-            # the simulation took longer to reach the same distance as the reference
-            # extrapolate the total (fraction) frames it would have taken to reach the same distance as the reference
-
-            r = total_frames * (sim_total_distance / ref_total_distance)
+            r = (sim_total_distance / ref_total_distance) * total_frames
         else:
-            # the simulation travelled more distance than the reference
-            # interpolate the (fraction) frame at which we've reached the same distance as the reference
-
-            if sim_total_distance == 0:
-                print("FUCK")
-                print(sim_cum_distances)
-                print(positions)
-
-            reach_frame_distance = sum(sim_cum_distances)
+            reach_frame_distance = sim_cum_distances[reach_frame]
             over_distance = reach_frame_distance - ref_total_distance
-            over_distance_ratio = 1 if sim_total_distance == 0 else over_distance / sim_total_distance
-            over_distance_frame = reach_frame + over_distance_ratio * total_frames
+            local_segment_distance = dist(positions[reach_frame - 1], positions[reach_frame])
+            over_distance_ratio = over_distance / local_segment_distance if local_segment_distance > 0 else 0
+            r = reach_frame + over_distance_ratio
 
-            r = over_distance_frame
-
-        # convert the distance difference to a fitness value
-        # total^2 - r^2 so that the fitness gets greater as the simulation gets better time-wise, with the goal of maximizing it
-        return total_frames * total_frames - r * r
+        # Higher r means worse performance, so subtract r from total_frames to maximize fitness.
+        return total_frames - r
 
     def _load_record(self, record_file):
         """
