@@ -111,8 +111,13 @@ class GAManager():
                 for simulation_result in simulation_results
             ]
 
+            records = [
+                [record for _, record in simulation_result]
+                for simulation_result in simulation_results
+            ]
+
             #fitnesses = [self._fitness(positions_seq) for positions_seq in positions]
-            fitnesses = [self._fitness2(positions_seq, ref_trajectory) for positions_seq in positions]
+            fitnesses = [self._fitness2(rec, ref_trajectory) for rec in records]
             best_fitnesses.append(max(fitnesses))
 
             population = simulation_results
@@ -286,12 +291,19 @@ class GAManager():
         
         return sum([dist(p1, p2) for (p1, p2) in more_itertools.pairwise(positions)])
 
-    def _fitness2(self, positions, ref_trajectory):
+    def _fitness2(self, rec, ref_trajectory):
         """
         Compute the fitness of a sequence of positions
         We define the fitness as the difference between the total travelled distance by the reference and the simulation,
         with the goal of maximizing it
         """
+
+        positions = [record["car_position"] for record in rec]
+        speeds = [record["car_speed"] for record in rec]
+
+        # try to find any negative speed values
+        if any(speed < 0 for speed in speeds):
+            return -999999999
 
         def dist(p1, p2):
             return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
