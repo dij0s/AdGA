@@ -16,6 +16,9 @@ def create_requests_session(retries=3, backoff_factor=0.3):
         status_forcelist=[429, 500, 502, 503, 504],
         backoff_factor=backoff_factor
     )
+
+    print(":-P")
+
     adapter = HTTPAdapter(max_retries=retry_strategy)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
