@@ -181,7 +181,7 @@ class GAManager():
         controls_hash = hash(str(controls))
         print("hash: ", controls_hash)
     
-        endpoint = "http://192.168.88.248:30308/api/simulate"
+        endpoint = "http://192.168.88.248:30333/api/route"
 
         data = {
             "controls": self._format_controls(controls),
