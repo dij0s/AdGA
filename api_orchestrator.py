@@ -14,7 +14,6 @@ def create_requests_session(retries=3, backoff_factor=0.3):
     retry_strategy = Retry(
         total=retries,
         status_forcelist=[429, 500, 502, 503, 504],
-        method_whitelist=["POST"],
         backoff_factor=backoff_factor
     )
     adapter = HTTPAdapter(max_retries=retry_strategy)
