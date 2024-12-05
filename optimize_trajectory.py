@@ -160,7 +160,7 @@ class GAManager():
         """
 
         # sort the population by fitness
-        population = [x for _, x in sorted(zip(fitnesses, population), reverse=True)]
+        population = [x for _, x in sorted(zip(fitnesses, population), reverse=True, key=lambda x: x[0])]
 
         p = self.elite_percentage
 
