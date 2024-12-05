@@ -111,6 +111,9 @@ def main(trajectories_file, population_size=10, elite_size=2, mutation_rate=0.1,
 
         plt.savefig("fitness_plot.png")
 
+        # save fitnesses to a file
+        np.savez("fitnesses.npz", fitnesses=f_recvbuf)
+
 
     MPI.Finalize()
 
